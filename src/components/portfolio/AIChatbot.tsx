@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
-import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen, RotateCcw, Volume2, VolumeX, Download, Mic, MicOff, Copy, Check, PlayCircle, StopCircle, Tag, ChevronDown, ChevronUp, Sun, Moon, Gauge, ThumbsUp, ThumbsDown, Search, Clock, Sparkles } from "lucide-react";
+import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen, RotateCcw, Volume2, VolumeX, Download, Mic, MicOff, Copy, Check, PlayCircle, StopCircle, Tag, ChevronDown, ChevronUp, Sun, Moon, Gauge, ThumbsUp, ThumbsDown, Search, Clock, Sparkles, Pin, PinOff, Globe } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "next-themes";
 import ReactMarkdown from "react-markdown";
@@ -34,6 +34,269 @@ type Message = {
   topic?: Topic;
   reaction?: Reaction;
   timestamp?: number;
+  pinned?: boolean;
+};
+
+type Language = "en" | "es" | "fr" | "de" | "zh" | "ja" | "hi";
+
+const translations: Record<Language, {
+  title: string;
+  placeholder: string;
+  listening: string;
+  quickQuestions: string;
+  followUp: string;
+  filterByTopic: string;
+  search: string;
+  searchMessages: string;
+  found: string;
+  messages: string;
+  all: string;
+  exportText: string;
+  exportJson: string;
+  clearChat: string;
+  mute: string;
+  unmute: string;
+  typingSpeed: string;
+  instant: string;
+  fast: string;
+  normal: string;
+  slow: string;
+  listen: string;
+  stop: string;
+  helpful: string;
+  notHelpful: string;
+  pin: string;
+  unpin: string;
+  pinnedMessages: string;
+  language: string;
+}> = {
+  en: {
+    title: "Vikas AI Assistant",
+    placeholder: "Ask me anything...",
+    listening: "Listening...",
+    quickQuestions: "Quick questions:",
+    followUp: "Suggested follow-ups:",
+    filterByTopic: "Filter by topic",
+    search: "Search",
+    searchMessages: "Search messages...",
+    found: "Found",
+    messages: "messages",
+    all: "All",
+    exportText: "Export as Text",
+    exportJson: "Export as JSON",
+    clearChat: "Clear chat",
+    mute: "Mute notifications",
+    unmute: "Enable notifications",
+    typingSpeed: "Typing Speed",
+    instant: "Instant",
+    fast: "Fast",
+    normal: "Normal",
+    slow: "Slow",
+    listen: "Listen",
+    stop: "Stop",
+    helpful: "Helpful",
+    notHelpful: "Not helpful",
+    pin: "Pin message",
+    unpin: "Unpin message",
+    pinnedMessages: "Pinned messages",
+    language: "Language",
+  },
+  es: {
+    title: "Asistente IA de Vikas",
+    placeholder: "Pregúntame algo...",
+    listening: "Escuchando...",
+    quickQuestions: "Preguntas rápidas:",
+    followUp: "Sugerencias:",
+    filterByTopic: "Filtrar por tema",
+    search: "Buscar",
+    searchMessages: "Buscar mensajes...",
+    found: "Encontrados",
+    messages: "mensajes",
+    all: "Todos",
+    exportText: "Exportar como texto",
+    exportJson: "Exportar como JSON",
+    clearChat: "Limpiar chat",
+    mute: "Silenciar",
+    unmute: "Activar sonido",
+    typingSpeed: "Velocidad de escritura",
+    instant: "Instantáneo",
+    fast: "Rápido",
+    normal: "Normal",
+    slow: "Lento",
+    listen: "Escuchar",
+    stop: "Detener",
+    helpful: "Útil",
+    notHelpful: "No útil",
+    pin: "Fijar mensaje",
+    unpin: "Desfijar mensaje",
+    pinnedMessages: "Mensajes fijados",
+    language: "Idioma",
+  },
+  fr: {
+    title: "Assistant IA Vikas",
+    placeholder: "Posez-moi une question...",
+    listening: "Écoute en cours...",
+    quickQuestions: "Questions rapides:",
+    followUp: "Suggestions:",
+    filterByTopic: "Filtrer par sujet",
+    search: "Rechercher",
+    searchMessages: "Rechercher des messages...",
+    found: "Trouvé",
+    messages: "messages",
+    all: "Tous",
+    exportText: "Exporter en texte",
+    exportJson: "Exporter en JSON",
+    clearChat: "Effacer le chat",
+    mute: "Désactiver les sons",
+    unmute: "Activer les sons",
+    typingSpeed: "Vitesse de frappe",
+    instant: "Instantané",
+    fast: "Rapide",
+    normal: "Normal",
+    slow: "Lent",
+    listen: "Écouter",
+    stop: "Arrêter",
+    helpful: "Utile",
+    notHelpful: "Pas utile",
+    pin: "Épingler",
+    unpin: "Désépingler",
+    pinnedMessages: "Messages épinglés",
+    language: "Langue",
+  },
+  de: {
+    title: "Vikas KI-Assistent",
+    placeholder: "Frag mich etwas...",
+    listening: "Zuhören...",
+    quickQuestions: "Schnelle Fragen:",
+    followUp: "Vorschläge:",
+    filterByTopic: "Nach Thema filtern",
+    search: "Suchen",
+    searchMessages: "Nachrichten suchen...",
+    found: "Gefunden",
+    messages: "Nachrichten",
+    all: "Alle",
+    exportText: "Als Text exportieren",
+    exportJson: "Als JSON exportieren",
+    clearChat: "Chat löschen",
+    mute: "Stumm schalten",
+    unmute: "Ton aktivieren",
+    typingSpeed: "Schreibgeschwindigkeit",
+    instant: "Sofort",
+    fast: "Schnell",
+    normal: "Normal",
+    slow: "Langsam",
+    listen: "Anhören",
+    stop: "Stoppen",
+    helpful: "Hilfreich",
+    notHelpful: "Nicht hilfreich",
+    pin: "Anpinnen",
+    unpin: "Lösen",
+    pinnedMessages: "Angeheftete Nachrichten",
+    language: "Sprache",
+  },
+  zh: {
+    title: "Vikas AI 助手",
+    placeholder: "问我任何问题...",
+    listening: "正在聆听...",
+    quickQuestions: "快速问题:",
+    followUp: "建议的后续问题:",
+    filterByTopic: "按主题筛选",
+    search: "搜索",
+    searchMessages: "搜索消息...",
+    found: "找到",
+    messages: "条消息",
+    all: "全部",
+    exportText: "导出为文本",
+    exportJson: "导出为JSON",
+    clearChat: "清除聊天",
+    mute: "静音",
+    unmute: "取消静音",
+    typingSpeed: "打字速度",
+    instant: "即时",
+    fast: "快速",
+    normal: "正常",
+    slow: "慢速",
+    listen: "收听",
+    stop: "停止",
+    helpful: "有帮助",
+    notHelpful: "没有帮助",
+    pin: "固定消息",
+    unpin: "取消固定",
+    pinnedMessages: "固定的消息",
+    language: "语言",
+  },
+  ja: {
+    title: "Vikas AIアシスタント",
+    placeholder: "何でも聞いてください...",
+    listening: "聞いています...",
+    quickQuestions: "クイック質問:",
+    followUp: "おすすめの質問:",
+    filterByTopic: "トピックで絞り込む",
+    search: "検索",
+    searchMessages: "メッセージを検索...",
+    found: "見つかりました",
+    messages: "件",
+    all: "すべて",
+    exportText: "テキストでエクスポート",
+    exportJson: "JSONでエクスポート",
+    clearChat: "チャットをクリア",
+    mute: "ミュート",
+    unmute: "ミュート解除",
+    typingSpeed: "タイピング速度",
+    instant: "即時",
+    fast: "速い",
+    normal: "普通",
+    slow: "遅い",
+    listen: "聴く",
+    stop: "停止",
+    helpful: "役立つ",
+    notHelpful: "役立たない",
+    pin: "ピン留め",
+    unpin: "ピン解除",
+    pinnedMessages: "ピン留めメッセージ",
+    language: "言語",
+  },
+  hi: {
+    title: "Vikas AI सहायक",
+    placeholder: "कुछ भी पूछें...",
+    listening: "सुन रहा हूं...",
+    quickQuestions: "त्वरित प्रश्न:",
+    followUp: "सुझाए गए प्रश्न:",
+    filterByTopic: "विषय से फ़िल्टर करें",
+    search: "खोजें",
+    searchMessages: "संदेश खोजें...",
+    found: "मिला",
+    messages: "संदेश",
+    all: "सभी",
+    exportText: "टेक्स्ट में निर्यात",
+    exportJson: "JSON में निर्यात",
+    clearChat: "चैट साफ़ करें",
+    mute: "म्यूट",
+    unmute: "अनम्यूट",
+    typingSpeed: "टाइपिंग गति",
+    instant: "तुरंत",
+    fast: "तेज़",
+    normal: "सामान्य",
+    slow: "धीमा",
+    listen: "सुनें",
+    stop: "रोकें",
+    helpful: "उपयोगी",
+    notHelpful: "उपयोगी नहीं",
+    pin: "पिन करें",
+    unpin: "अनपिन करें",
+    pinnedMessages: "पिन किए गए संदेश",
+    language: "भाषा",
+  },
+};
+
+const languageNames: Record<Language, string> = {
+  en: "English",
+  es: "Español",
+  fr: "Français",
+  de: "Deutsch",
+  zh: "中文",
+  ja: "日本語",
+  hi: "हिन्दी",
 };
 
 // Follow-up suggestions based on conversation context
@@ -241,11 +504,22 @@ export function AIChatbot() {
       return true;
     }
   });
+  const [language, setLanguage] = useState<Language>(() => {
+    try {
+      const saved = localStorage.getItem("vikas-ai-language");
+      return (saved as Language) || "en";
+    } catch {
+      return "en";
+    }
+  });
+  const [showPinnedOnly, setShowPinnedOnly] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const speechSynthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
   const typingQueueRef = useRef<string[]>([]);
   const isProcessingQueueRef = useRef(false);
+
+  const t = translations[language];
 
   // Save typing speed preference
   useEffect(() => {
@@ -255,6 +529,15 @@ export function AIChatbot() {
       console.log("Could not save typing speed:", error);
     }
   }, [typingSpeed]);
+
+  // Save language preference
+  useEffect(() => {
+    try {
+      localStorage.setItem("vikas-ai-language", language);
+    } catch (error) {
+      console.log("Could not save language:", error);
+    }
+  }, [language]);
 
   const toggleTheme = useCallback(() => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -347,6 +630,27 @@ export function AIChatbot() {
     }
   }, [toast]);
 
+  // Handle message pinning
+  const handlePin = useCallback((messageIndex: number) => {
+    setMessages((prev) => {
+      const newMessages = [...prev];
+      newMessages[messageIndex] = {
+        ...newMessages[messageIndex],
+        pinned: !newMessages[messageIndex].pinned,
+      };
+      return newMessages;
+    });
+    
+    const isPinned = !messages[messageIndex]?.pinned;
+    toast({
+      title: isPinned ? t.pin : t.unpin,
+      description: isPinned ? "Message saved for later" : "Message removed from pins",
+    });
+  }, [messages, toast, t]);
+
+  // Get pinned messages count
+  const pinnedCount = messages.filter(m => m.pinned).length;
+
   // Get topic statistics
   const topicStats = messages.reduce((acc, msg) => {
     if (msg.role === "user" && msg.topic) {
@@ -355,10 +659,13 @@ export function AIChatbot() {
     return acc;
   }, {} as Record<Topic, number>);
 
-  // Filter messages by topic and search query
+  // Filter messages by topic, search query, and pinned status
   const filteredMessages = messages.filter((msg, idx) => {
-    // Always show initial message unless searching
-    if (idx === 0 && !searchQuery) return true;
+    // Apply pinned filter first
+    if (showPinnedOnly && !msg.pinned) return false;
+    
+    // Always show initial message unless searching or showing pinned only
+    if (idx === 0 && !searchQuery && !showPinnedOnly) return true;
     
     // Apply search filter
     if (searchQuery) {
@@ -728,7 +1035,7 @@ export function AIChatbot() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 bg-primary text-primary-foreground rounded-t-lg">
             <div className="flex items-center gap-2">
               <Bot className="h-5 w-5" />
-              <CardTitle className="text-lg font-semibold">Vikas AI Assistant</CardTitle>
+              <CardTitle className="text-lg font-semibold">{t.title}</CardTitle>
             </div>
             <div className="flex items-center gap-1">
               <Button
@@ -746,7 +1053,33 @@ export function AIChatbot() {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
-                    title="Typing speed"
+                    title={t.language}
+                  >
+                    <Globe className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-40" align="end">
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">{t.language}</p>
+                    {(Object.keys(languageNames) as Language[]).map((lang) => (
+                      <button
+                        key={lang}
+                        onClick={() => setLanguage(lang)}
+                        className={`w-full text-left px-2 py-1 text-sm rounded hover:bg-muted transition-colors ${language === lang ? "bg-muted font-medium" : ""}`}
+                      >
+                        {languageNames[lang]}
+                      </button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
+                    title={t.typingSpeed}
                   >
                     <Gauge className="h-4 w-4" />
                   </Button>
@@ -754,9 +1087,9 @@ export function AIChatbot() {
                 <PopoverContent className="w-56" align="end">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Typing Speed</span>
+                      <span className="text-sm font-medium">{t.typingSpeed}</span>
                       <span className="text-xs text-muted-foreground">
-                        {typingSpeed === 0 ? "Instant" : typingSpeed <= 10 ? "Fast" : typingSpeed <= 30 ? "Normal" : "Slow"}
+                        {typingSpeed === 0 ? t.instant : typingSpeed <= 10 ? t.fast : typingSpeed <= 30 ? t.normal : t.slow}
                       </span>
                     </div>
                     <Slider
@@ -766,9 +1099,6 @@ export function AIChatbot() {
                       step={5}
                       className="w-full"
                     />
-                    <p className="text-xs text-muted-foreground">
-                      Adjust how fast AI responses appear
-                    </p>
                   </div>
                 </PopoverContent>
               </Popover>
@@ -777,7 +1107,7 @@ export function AIChatbot() {
                 size="icon"
                 onClick={toggleSound}
                 className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
-                title={soundEnabled ? "Mute notifications" : "Enable notifications"}
+                title={soundEnabled ? t.mute : t.unmute}
               >
                 {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
               </Button>
@@ -796,10 +1126,10 @@ export function AIChatbot() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => exportChat("text")}>
-                        Export as Text
+                        {t.exportText}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => exportChat("json")}>
-                        Export as JSON
+                        {t.exportJson}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -808,7 +1138,7 @@ export function AIChatbot() {
                     size="icon"
                     onClick={clearChat}
                     className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
-                    title="Clear chat"
+                    title={t.clearChat}
                   >
                     <RotateCcw className="h-4 w-4" />
                   </Button>
@@ -828,24 +1158,36 @@ export function AIChatbot() {
             {/* Search and Filter Bar */}
             {messages.length > 2 && (
               <div className="border-b px-4 py-2 space-y-2">
-                {/* Search Toggle */}
+                {/* Search, Filter, and Pin Toggle */}
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setShowSearch(!showSearch)}
                     className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
                   >
                     <Search className="h-3 w-3" />
-                    <span>Search</span>
+                    <span>{t.search}</span>
                   </button>
                   <span className="text-muted-foreground/50">|</span>
                   <button
                     onClick={() => setShowTopicFilter(!showTopicFilter)}
-                    className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors flex-1"
+                    className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
                   >
                     <Tag className="h-3 w-3" />
-                    <span>Filter by topic</span>
-                    {showTopicFilter ? <ChevronUp className="h-3 w-3 ml-auto" /> : <ChevronDown className="h-3 w-3 ml-auto" />}
+                    <span>{t.filterByTopic}</span>
+                    {showTopicFilter ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                   </button>
+                  {pinnedCount > 0 && (
+                    <>
+                      <span className="text-muted-foreground/50">|</span>
+                      <button
+                        onClick={() => setShowPinnedOnly(!showPinnedOnly)}
+                        className={`flex items-center gap-2 text-xs transition-colors ${showPinnedOnly ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                      >
+                        <Pin className="h-3 w-3" />
+                        <span>{t.pinnedMessages} ({pinnedCount})</span>
+                      </button>
+                    </>
+                  )}
                 </div>
 
                 {/* Search Input */}
@@ -853,7 +1195,7 @@ export function AIChatbot() {
                   <div className="relative">
                     <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
                     <Input
-                      placeholder="Search messages..."
+                      placeholder={t.searchMessages}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="h-7 pl-7 text-xs"
@@ -879,7 +1221,7 @@ export function AIChatbot() {
                       className="cursor-pointer text-xs"
                       onClick={() => setTopicFilter("all")}
                     >
-                      All ({messages.length - 1})
+                      {t.all} ({messages.length - 1})
                     </Badge>
                     {(Object.keys(topicStats) as Topic[]).map((topic) => (
                       <Badge
@@ -897,7 +1239,7 @@ export function AIChatbot() {
                 {/* Search Results Count */}
                 {searchQuery && (
                   <p className="text-xs text-muted-foreground">
-                    Found {filteredMessages.length} message{filteredMessages.length !== 1 ? "s" : ""}
+                    {t.found} {filteredMessages.length} {t.messages}
                   </p>
                 )}
               </div>
@@ -991,7 +1333,7 @@ export function AIChatbot() {
                           )}
                         </div>
                         {message.role === "assistant" && message.content && originalIndex > 0 && (
-                          <div className="flex items-center gap-1 self-start">
+                          <div className="flex items-center gap-1 self-start flex-wrap">
                             <Button
                               variant="ghost"
                               size="sm"
@@ -1001,12 +1343,12 @@ export function AIChatbot() {
                               {speakingMessageIndex === originalIndex ? (
                                 <>
                                   <StopCircle className="h-3 w-3 mr-1" />
-                                  Stop
+                                  {t.stop}
                                 </>
                               ) : (
                                 <>
                                   <PlayCircle className="h-3 w-3 mr-1" />
-                                  Listen
+                                  {t.listen}
                                 </>
                               )}
                             </Button>
@@ -1016,7 +1358,7 @@ export function AIChatbot() {
                                 size="icon"
                                 onClick={() => handleReaction(originalIndex, "up")}
                                 className={`h-6 w-6 ${message.reaction === "up" ? "text-green-500" : "text-muted-foreground hover:text-foreground"}`}
-                                title="Helpful"
+                                title={t.helpful}
                               >
                                 <ThumbsUp className="h-3 w-3" />
                               </Button>
@@ -1025,9 +1367,18 @@ export function AIChatbot() {
                                 size="icon"
                                 onClick={() => handleReaction(originalIndex, "down")}
                                 className={`h-6 w-6 ${message.reaction === "down" ? "text-red-500" : "text-muted-foreground hover:text-foreground"}`}
-                                title="Not helpful"
+                                title={t.notHelpful}
                               >
                                 <ThumbsDown className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handlePin(originalIndex)}
+                                className={`h-6 w-6 ${message.pinned ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                                title={message.pinned ? t.unpin : t.pin}
+                              >
+                                {message.pinned ? <PinOff className="h-3 w-3" /> : <Pin className="h-3 w-3" />}
                               </Button>
                             </div>
                           </div>
@@ -1050,7 +1401,7 @@ export function AIChatbot() {
               <div className="border-t px-4 py-3">
                 <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
                   <Sparkles className="h-3 w-3" />
-                  Suggested follow-ups:
+                  {t.followUp}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {followUpSuggestions.map((suggestion, idx) => (
@@ -1071,7 +1422,7 @@ export function AIChatbot() {
             {/* Quick Reply Buttons */}
             {messages.length <= 2 && !isLoading && (
               <div className="border-t px-4 py-3">
-                <p className="text-xs text-muted-foreground mb-2">Quick questions:</p>
+                <p className="text-xs text-muted-foreground mb-2">{t.quickQuestions}</p>
                 <div className="flex flex-wrap gap-2">
                   {quickReplies.map((reply) => (
                     <Button
@@ -1092,7 +1443,7 @@ export function AIChatbot() {
             <div className="border-t p-4">
               <div className="flex gap-2">
                 <Input
-                  placeholder={isListening ? "Listening..." : "Ask me anything..."}
+                  placeholder={isListening ? t.listening : t.placeholder}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
