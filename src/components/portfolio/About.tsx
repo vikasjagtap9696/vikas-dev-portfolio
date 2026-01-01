@@ -12,7 +12,7 @@ export function About() {
             About <span className="gradient-text">Me</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            A passionate developer committed to creating impactful digital solutions
+            {profileSettings?.about_intro || "A passionate developer committed to creating impactful digital solutions"}
           </p>
         </div>
 
@@ -39,11 +39,7 @@ export function About() {
                 Who I Am
               </h3>
               <p className="text-muted-foreground leading-relaxed">
-                I am Vikas Prakash Jagtap, a passionate Full Stack Web Developer and Computer Science 
-                graduate with strong problem-solving skills and hands-on experience in building scalable 
-                web applications. I enjoy working with modern technologies like React, Node.js, Java, SQL, 
-                and PostgreSQL. My goal is to become an industry-ready all-round developer and contribute 
-                to impactful software solutions.
+                {profileSettings?.about_description || "I am Vikas Prakash Jagtap, a passionate Full Stack Web Developer and Computer Science graduate with strong problem-solving skills and hands-on experience in building scalable web applications. I enjoy working with modern technologies like React, Node.js, Java, SQL, and PostgreSQL. My goal is to become an industry-ready all-round developer and contribute to impactful software solutions."}
               </p>
             </div>
 
@@ -54,12 +50,28 @@ export function About() {
               </h3>
               <div className="space-y-3">
                 <div>
-                  <p className="font-medium">Bachelor of Computer Science</p>
-                  <p className="text-muted-foreground text-sm">Baramati, Maharashtra • Graduate</p>
+                  {(() => {
+                    const primary = profileSettings?.about_education_primary || "Bachelor of Computer Science | Baramati, Maharashtra • Graduate";
+                    const [title, details] = primary.split("|").map(s => s.trim());
+                    return (
+                      <>
+                        <p className="font-medium">{title}</p>
+                        {details && <p className="text-muted-foreground text-sm">{details}</p>}
+                      </>
+                    );
+                  })()}
                 </div>
                 <div>
-                  <p className="font-medium">Full Stack Development</p>
-                  <p className="text-muted-foreground text-sm">Self-taught & Continuous Learning</p>
+                  {(() => {
+                    const secondary = profileSettings?.about_education_secondary || "Full Stack Development | Self-taught & Continuous Learning";
+                    const [title, details] = secondary.split("|").map(s => s.trim());
+                    return (
+                      <>
+                        <p className="font-medium">{title}</p>
+                        {details && <p className="text-muted-foreground text-sm">{details}</p>}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             </div>

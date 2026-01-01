@@ -14,6 +14,10 @@ interface ProfileSettings {
   hero_title: string | null;
   hero_subtitle: string | null;
   hero_bio: string | null;
+  about_intro: string | null;
+  about_description: string | null;
+  about_education_primary: string | null;
+  about_education_secondary: string | null;
 }
 
 export function useProfileSettings() {
@@ -49,6 +53,10 @@ export function useUpdateProfileSettings() {
       hero_title?: string | null;
       hero_subtitle?: string | null;
       hero_bio?: string | null;
+      about_intro?: string | null;
+      about_description?: string | null;
+      about_education_primary?: string | null;
+      about_education_secondary?: string | null;
     }) => {
       const { id, ...fieldsToUpdate } = updates;
       const { error } = await supabase

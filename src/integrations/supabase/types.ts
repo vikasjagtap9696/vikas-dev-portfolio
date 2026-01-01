@@ -148,7 +148,11 @@ export type Database = {
       }
       profile_settings: {
         Row: {
+          about_description: string | null
+          about_education_primary: string | null
+          about_education_secondary: string | null
           about_image_url: string | null
+          about_intro: string | null
           avatar_url: string | null
           created_at: string
           email: string | null
@@ -164,7 +168,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          about_description?: string | null
+          about_education_primary?: string | null
+          about_education_secondary?: string | null
           about_image_url?: string | null
+          about_intro?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string | null
@@ -180,7 +188,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          about_description?: string | null
+          about_education_primary?: string | null
+          about_education_secondary?: string | null
           about_image_url?: string | null
+          about_intro?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string | null
