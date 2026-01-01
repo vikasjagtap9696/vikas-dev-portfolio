@@ -38,22 +38,31 @@ export function Hero() {
           {/* Left Content */}
           <div className="flex-1 text-center lg:text-left">
             <p className="text-accent font-medium mb-4 animate-fade-in">
-              Hello, I'm
+              {profileSettings?.hero_title || "Hello, I'm"}
             </p>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4">
-              <span className="text-foreground animate-fade-in" style={{ animationDelay: "0.1s" }}>
-                Vikas Prakash
-              </span>{" "}
-              <span className="gradient-text animate-fade-in" style={{ animationDelay: "0.2s" }}>
-                Jagtap
-              </span>
+              {(() => {
+                const name = profileSettings?.hero_name || "Vikas Prakash Jagtap";
+                const nameParts = name.split(" ");
+                const lastName = nameParts.pop() || "";
+                const firstName = nameParts.join(" ");
+                return (
+                  <>
+                    <span className="text-foreground animate-fade-in" style={{ animationDelay: "0.1s" }}>
+                      {firstName}
+                    </span>{" "}
+                    <span className="gradient-text animate-fade-in" style={{ animationDelay: "0.2s" }}>
+                      {lastName}
+                    </span>
+                  </>
+                );
+              })()}
             </h1>
             <h2 className="text-xl md:text-2xl lg:text-3xl text-muted-foreground mb-6 animate-fade-in" style={{ animationDelay: "0.3s" }}>
-              Full Stack Web Developer
+              {profileSettings?.hero_subtitle || "Full Stack Web Developer"}
             </h2>
             <p className="text-muted-foreground max-w-xl mb-8 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-              Passionate developer building scalable web applications with React, Node.js, Java, SQL, and PostgreSQL. 
-              Focused on cybersecurity and continuously improving through real-world projects.
+              {profileSettings?.hero_bio || "Passionate developer building scalable web applications with React, Node.js, Java, SQL, and PostgreSQL. Focused on cybersecurity and continuously improving through real-world projects."}
             </p>
 
             {/* CTA Buttons */}

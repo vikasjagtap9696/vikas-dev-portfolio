@@ -9,6 +9,7 @@ import { ProfilePhotoDialog } from "./ProfilePhotoDialog";
 import { HeroBackgroundDialog } from "./HeroBackgroundDialog";
 import { SocialLinksDialog } from "./SocialLinksDialog";
 import { AboutImageDialog } from "./AboutImageDialog";
+import { HeroTextDialog } from "./HeroTextDialog";
 
 export function AdminToolbar() {
   const { isAdmin, signOut, user } = useAuth();
@@ -31,6 +32,7 @@ export function AdminToolbar() {
           <HeroBackgroundDialog />
           <SocialLinksDialog />
           <AboutImageDialog />
+          <HeroTextDialog />
           <Button
             variant="ghost"
             size="sm"

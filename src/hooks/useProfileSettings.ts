@@ -10,6 +10,10 @@ interface ProfileSettings {
   twitter_url: string | null;
   email: string | null;
   about_image_url: string | null;
+  hero_name: string | null;
+  hero_title: string | null;
+  hero_subtitle: string | null;
+  hero_bio: string | null;
 }
 
 export function useProfileSettings() {
@@ -41,6 +45,10 @@ export function useUpdateProfileSettings() {
       twitter_url?: string | null;
       email?: string | null;
       about_image_url?: string | null;
+      hero_name?: string | null;
+      hero_title?: string | null;
+      hero_subtitle?: string | null;
+      hero_bio?: string | null;
     }) => {
       const { id, ...fieldsToUpdate } = updates;
       const { error } = await supabase
