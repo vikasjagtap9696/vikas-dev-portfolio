@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen, RotateCcw } from "lucide-react";
+import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen, RotateCcw, Volume2, VolumeX } from "lucide-react";
 
 type Message = {
   role: "user" | "assistant";
@@ -11,6 +11,7 @@ type Message = {
 };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/portfolio-assistant`;
+const STORAGE_KEY = "vikas-ai-chat-history";
 
 const quickReplies = [
   { label: "View Projects", icon: FolderOpen, message: "Show me your portfolio projects" },
@@ -37,13 +38,72 @@ const TypingIndicator = () => (
   </div>
 );
 
+// Generate a notification sound using Web Audio API
+const playNotificationSound = () => {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+  } catch (error) {
+    console.log("Could not play notification sound:", error);
+  }
+};
+
 export function AIChatbot() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([initialMessage]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.length > 0 ? parsed : [initialMessage];
+      }
+    } catch (error) {
+      console.log("Could not load chat history:", error);
+    }
+    return [initialMessage];
+  });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    try {
+      return localStorage.getItem("vikas-ai-sound") !== "false";
+    } catch {
+      return true;
+    }
+  });
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    } catch (error) {
+      console.log("Could not save chat history:", error);
+    }
+  }, [messages]);
+
+  // Save sound preference
+  useEffect(() => {
+    try {
+      localStorage.setItem("vikas-ai-sound", String(soundEnabled));
+    } catch (error) {
+      console.log("Could not save sound preference:", error);
+    }
+  }, [soundEnabled]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -55,6 +115,10 @@ export function AIChatbot() {
     setMessages([initialMessage]);
     setInput("");
   };
+
+  const toggleSound = useCallback(() => {
+    setSoundEnabled(prev => !prev);
+  }, []);
 
   const sendMessage = async (messageText?: string) => {
     const text = messageText || input.trim();
@@ -132,6 +196,11 @@ export function AIChatbot() {
           }
         }
       }
+
+      // Play notification sound when response is complete
+      if (soundEnabled) {
+        playNotificationSound();
+      }
     } catch (error) {
       console.error("Chat error:", error);
       setIsTyping(false);
@@ -181,6 +250,15 @@ export function AIChatbot() {
               <CardTitle className="text-lg font-semibold">Vikas AI Assistant</CardTitle>
             </div>
             <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleSound}
+                className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
+                title={soundEnabled ? "Mute notifications" : "Enable notifications"}
+              >
+                {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              </Button>
               {messages.length > 1 && (
                 <Button
                   variant="ghost"
