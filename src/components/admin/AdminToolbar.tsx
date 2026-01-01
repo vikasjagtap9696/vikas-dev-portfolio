@@ -7,6 +7,7 @@ import { ContactSubmissionsDialog } from "./ContactSubmissionsDialog";
 import { NotificationSettingsDialog } from "./NotificationSettingsDialog";
 import { ProfilePhotoDialog } from "./ProfilePhotoDialog";
 import { HeroBackgroundDialog } from "./HeroBackgroundDialog";
+import { SocialLinksDialog } from "./SocialLinksDialog";
 
 export function AdminToolbar() {
   const { isAdmin, signOut, user } = useAuth();
@@ -27,6 +28,7 @@ export function AdminToolbar() {
           <NotificationSettingsDialog />
           <ProfilePhotoDialog />
           <HeroBackgroundDialog />
+          <SocialLinksDialog />
           <Button
             variant="ghost"
             size="sm"

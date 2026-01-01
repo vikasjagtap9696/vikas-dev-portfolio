@@ -5,6 +5,10 @@ interface ProfileSettings {
   id: string;
   avatar_url: string | null;
   hero_background_url: string | null;
+  github_url: string | null;
+  linkedin_url: string | null;
+  twitter_url: string | null;
+  email: string | null;
 }
 
 export function useProfileSettings() {
@@ -27,7 +31,15 @@ export function useUpdateProfileSettings() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (updates: { id: string; avatar_url?: string | null; hero_background_url?: string | null }) => {
+    mutationFn: async (updates: { 
+      id: string; 
+      avatar_url?: string | null; 
+      hero_background_url?: string | null;
+      github_url?: string | null;
+      linkedin_url?: string | null;
+      twitter_url?: string | null;
+      email?: string | null;
+    }) => {
       const { id, ...fieldsToUpdate } = updates;
       const { error } = await supabase
         .from("profile_settings")
