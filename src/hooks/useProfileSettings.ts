@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface ProfileSettings {
   id: string;
   avatar_url: string | null;
+  hero_background_url: string | null;
 }
 
 export function useProfileSettings() {
@@ -26,16 +27,35 @@ export function useUpdateProfileSettings() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, avatar_url }: { id: string; avatar_url: string | null }) => {
+    mutationFn: async (updates: { id: string; avatar_url?: string | null; hero_background_url?: string | null }) => {
+      const { id, ...fieldsToUpdate } = updates;
       const { error } = await supabase
         .from("profile_settings")
-        .update({ avatar_url })
+        .update(fieldsToUpdate)
         .eq("id", id);
 
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile-settings"] });
+    },
+  });
+}
+
+export function useUploadHeroBackground() {
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `hero-background.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from("avatars").getPublicUrl(fileName);
+      return data.publicUrl;
     },
   });
 }
