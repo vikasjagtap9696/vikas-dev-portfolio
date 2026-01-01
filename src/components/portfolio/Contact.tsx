@@ -11,8 +11,8 @@ const contactInfo = [
   {
     icon: Mail,
     label: "Email",
-    value: "vikasjagtap.9696@gmail.com",
-    href: "mailto:vikasjagtap.9696@gmail.com",
+    value: "vikasjagtap.9996@gmail.com",
+    href: "mailto:vikasjagtap.9996@gmail.com",
   },
   {
     icon: Phone,
@@ -30,10 +30,12 @@ const contactInfo = [
 
 const socialLinks = [
   { icon: Github, href: "https://github.com/vikasjagtap9696", label: "GitHub" },
-  { icon: Linkedin, href: "https://www.linkedin.com/in/vikas-jagtap", label: "LinkedIn" },
+  { icon: Linkedin, href: "https://www.linkedin.com/in/vikasjagtap9696/", label: "LinkedIn" },
   { icon: Twitter, href: "https://twitter.com/yourusername", label: "Twitter" },
   { icon: Globe, href: "https://vikasjagtap.dev", label: "Portfolio" },
 ];
+
+
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),

@@ -50,7 +50,7 @@ export function AdminToolbar() {
 
   return (
     <>
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-20 right-2 z-50">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button className="gap-2 shadow-lg rounded-full px-6" size="lg">

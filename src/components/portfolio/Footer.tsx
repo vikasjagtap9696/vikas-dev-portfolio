@@ -10,7 +10,7 @@ export function Footer() {
 
   const socialLinks = [
     { icon: Github, href: profileSettings?.github_url || "https://github.com/vikasjagtap9696", label: "GitHub" },
-    { icon: Linkedin, href: profileSettings?.linkedin_url || "https://www.linkedin.com/in/vikas-jagtap", label: "LinkedIn" },
+    { icon: Linkedin, href: profileSettings?.linkedin_url || "https://www.linkedin.com/in/vikasjagtap9696/", label: "LinkedIn" },
     { icon: Twitter, href: profileSettings?.twitter_url || "https://twitter.com/yourusername", label: "Twitter" },
     { icon: Globe, href: `https://${profileSettings?.footer_location || "vikasjagtap.dev"}`, label: "Portfolio" },
   ];
