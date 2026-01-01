@@ -7,8 +7,7 @@ import {
   FileText, 
   Image, 
   Settings,
-  ChevronDown,
-  Briefcase
+  ChevronDown
 } from "lucide-react";
 import { useState } from "react";
 import {
@@ -32,6 +31,8 @@ import { CareerGoalsDialog } from "./CareerGoalsDialog";
 import { HeroStatsDialog } from "./HeroStatsDialog";
 import { FooterDialog } from "./FooterDialog";
 import { ExperienceManageDialog } from "./ExperienceManageDialog";
+import { SkillsManageDialog } from "./SkillsManageDialog";
+import { ProjectsManageDialog } from "./ProjectsManageDialog";
 
 export function AdminToolbar() {
   const { isAdmin, signOut } = useAuth();
@@ -83,6 +84,20 @@ export function AdminToolbar() {
               <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
                 <div className="w-full">
                   <CareerGoalsDialog />
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Skills</DropdownMenuLabel>
+              <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                <div className="w-full">
+                  <SkillsManageDialog />
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Projects</DropdownMenuLabel>
+              <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                <div className="w-full">
+                  <ProjectsManageDialog />
                 </div>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
