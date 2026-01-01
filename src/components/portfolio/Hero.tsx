@@ -86,35 +86,41 @@ export function Hero() {
 
             {/* Social Links */}
             <div className="flex gap-4 justify-center lg:justify-start animate-fade-in" style={{ animationDelay: "0.6s" }}>
+              {(profileSettings?.github_url || "https://github.com/vikasjagtap9696") && (
+                <a
+                  href={profileSettings?.github_url || "https://github.com/vikasjagtap9696"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 rounded-full glass hover-glow transition-all duration-300 hover:scale-110"
+                  aria-label="GitHub"
+                >
+                  <Github className="h-5 w-5" />
+                </a>
+              )}
+              {(profileSettings?.linkedin_url || "https://www.linkedin.com/in/vikas-jagtap") && (
+                <a
+                  href={profileSettings?.linkedin_url || "https://www.linkedin.com/in/vikas-jagtap"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 rounded-full glass hover-glow transition-all duration-300 hover:scale-110"
+                  aria-label="LinkedIn"
+                >
+                  <Linkedin className="h-5 w-5" />
+                </a>
+              )}
+              {(profileSettings?.twitter_url || "https://twitter.com/yourusername") && (
+                <a
+                  href={profileSettings?.twitter_url || "https://twitter.com/yourusername"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 rounded-full glass hover-glow transition-all duration-300 hover:scale-110"
+                  aria-label="Twitter"
+                >
+                  <Twitter className="h-5 w-5" />
+                </a>
+              )}
               <a
-                href="https://github.com/vikasjagtap9696"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-3 rounded-full glass hover-glow transition-all duration-300 hover:scale-110"
-                aria-label="GitHub"
-              >
-                <Github className="h-5 w-5" />
-              </a>
-              <a
-                href="https://www.linkedin.com/in/vikas-jagtap"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-3 rounded-full glass hover-glow transition-all duration-300 hover:scale-110"
-                aria-label="LinkedIn"
-              >
-                <Linkedin className="h-5 w-5" />
-              </a>
-              <a
-                href="https://twitter.com/yourusername"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-3 rounded-full glass hover-glow transition-all duration-300 hover:scale-110"
-                aria-label="Twitter"
-              >
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a
-                href="mailto:vikasjagtap.9696@gmail.com"
+                href={`mailto:${profileSettings?.email || "vikasjagtap.9696@gmail.com"}`}
                 className="p-3 rounded-full glass hover-glow transition-all duration-300 hover:scale-110"
                 aria-label="Email"
               >
