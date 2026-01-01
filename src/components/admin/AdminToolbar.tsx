@@ -11,6 +11,7 @@ import { SocialLinksDialog } from "./SocialLinksDialog";
 import { AboutImageDialog } from "./AboutImageDialog";
 import { HeroTextDialog } from "./HeroTextDialog";
 import { AboutTextDialog } from "./AboutTextDialog";
+import { CareerGoalsDialog } from "./CareerGoalsDialog";
 
 export function AdminToolbar() {
   const { isAdmin, signOut, user } = useAuth();
@@ -35,6 +36,7 @@ export function AdminToolbar() {
           <AboutImageDialog />
           <HeroTextDialog />
           <AboutTextDialog />
+          <CareerGoalsDialog />
           <Button
             variant="ghost"
             size="sm"

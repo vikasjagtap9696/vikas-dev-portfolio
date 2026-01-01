@@ -154,6 +154,7 @@ export type Database = {
           about_image_url: string | null
           about_intro: string | null
           avatar_url: string | null
+          career_goals: string[] | null
           created_at: string
           email: string | null
           github_url: string | null
@@ -174,6 +175,7 @@ export type Database = {
           about_image_url?: string | null
           about_intro?: string | null
           avatar_url?: string | null
+          career_goals?: string[] | null
           created_at?: string
           email?: string | null
           github_url?: string | null
@@ -194,6 +196,7 @@ export type Database = {
           about_image_url?: string | null
           about_intro?: string | null
           avatar_url?: string | null
+          career_goals?: string[] | null
           created_at?: string
           email?: string | null
           github_url?: string | null

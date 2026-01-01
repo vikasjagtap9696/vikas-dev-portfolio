@@ -85,22 +85,17 @@ export function About() {
                 Career Goals
               </h3>
               <ul className="space-y-2 text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <span className="text-primary mt-1">▹</span>
-                  Become an industry-ready all-round developer
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary mt-1">▹</span>
-                  Build products that solve real-world problems
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary mt-1">▹</span>
-                  Contribute to impactful software solutions
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary mt-1">▹</span>
-                  Continuously improve through real-world projects
-                </li>
+                {(profileSettings?.career_goals || [
+                  "Become an industry-ready all-round developer",
+                  "Build products that solve real-world problems",
+                  "Contribute to impactful software solutions",
+                  "Continuously improve through real-world projects",
+                ]).map((goal, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="text-primary mt-1">▹</span>
+                    {goal}
+                  </li>
+                ))}
               </ul>
             </div>
 
