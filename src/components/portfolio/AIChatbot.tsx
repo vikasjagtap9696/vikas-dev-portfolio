@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, X, Send, Bot, User, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen } from "lucide-react";
 
 type Message = {
   role: "user" | "assistant";
@@ -11,6 +11,13 @@ type Message = {
 };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/portfolio-assistant`;
+
+const quickReplies = [
+  { label: "View Projects", icon: FolderOpen, message: "Show me your portfolio projects" },
+  { label: "Services", icon: Briefcase, message: "What services do you offer?" },
+  { label: "Tech Stack", icon: Code, message: "What technologies do you use?" },
+  { label: "Contact", icon: Mail, message: "How can I contact Vikas for a project?" },
+];
 
 export function AIChatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -30,10 +37,11 @@ export function AIChatbot() {
     }
   }, [messages]);
 
-  const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+  const sendMessage = async (messageText?: string) => {
+    const text = messageText || input.trim();
+    if (!text || isLoading) return;
 
-    const userMessage: Message = { role: "user", content: input.trim() };
+    const userMessage: Message = { role: "user", content: text };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
@@ -117,6 +125,10 @@ export function AIChatbot() {
     }
   };
 
+  const handleQuickReply = (message: string) => {
+    sendMessage(message);
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -189,6 +201,28 @@ export function AIChatbot() {
                 ))}
               </div>
             </ScrollArea>
+            
+            {/* Quick Reply Buttons */}
+            {messages.length <= 2 && !isLoading && (
+              <div className="border-t px-4 py-3">
+                <p className="text-xs text-muted-foreground mb-2">Quick questions:</p>
+                <div className="flex flex-wrap gap-2">
+                  {quickReplies.map((reply) => (
+                    <Button
+                      key={reply.label}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleQuickReply(reply.message)}
+                      className="text-xs h-8"
+                    >
+                      <reply.icon className="h-3 w-3 mr-1" />
+                      {reply.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             <div className="border-t p-4">
               <div className="flex gap-2">
                 <Input
@@ -200,7 +234,7 @@ export function AIChatbot() {
                   className="flex-1"
                 />
                 <Button
-                  onClick={sendMessage}
+                  onClick={() => sendMessage()}
                   disabled={!input.trim() || isLoading}
                   size="icon"
                 >
