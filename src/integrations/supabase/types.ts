@@ -165,6 +165,10 @@ export type Database = {
           hero_title: string | null
           id: string
           linkedin_url: string | null
+          stat_client_satisfaction: string | null
+          stat_projects_completed: string | null
+          stat_technologies: string | null
+          stat_years_experience: string | null
           twitter_url: string | null
           updated_at: string
         }
@@ -186,6 +190,10 @@ export type Database = {
           hero_title?: string | null
           id?: string
           linkedin_url?: string | null
+          stat_client_satisfaction?: string | null
+          stat_projects_completed?: string | null
+          stat_technologies?: string | null
+          stat_years_experience?: string | null
           twitter_url?: string | null
           updated_at?: string
         }
@@ -207,6 +215,10 @@ export type Database = {
           hero_title?: string | null
           id?: string
           linkedin_url?: string | null
+          stat_client_satisfaction?: string | null
+          stat_projects_completed?: string | null
+          stat_technologies?: string | null
+          stat_years_experience?: string | null
           twitter_url?: string | null
           updated_at?: string
         }

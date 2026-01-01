@@ -19,6 +19,10 @@ interface ProfileSettings {
   about_education_primary: string | null;
   about_education_secondary: string | null;
   career_goals: string[] | null;
+  stat_years_experience: string | null;
+  stat_projects_completed: string | null;
+  stat_technologies: string | null;
+  stat_client_satisfaction: string | null;
 }
 
 export function useProfileSettings() {
@@ -59,6 +63,10 @@ export function useUpdateProfileSettings() {
       about_education_primary?: string | null;
       about_education_secondary?: string | null;
       career_goals?: string[] | null;
+      stat_years_experience?: string | null;
+      stat_projects_completed?: string | null;
+      stat_technologies?: string | null;
+      stat_client_satisfaction?: string | null;
     }) => {
       const { id, ...fieldsToUpdate } = updates;
       const { error } = await supabase

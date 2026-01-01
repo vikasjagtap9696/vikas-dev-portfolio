@@ -149,19 +149,19 @@ export function Hero() {
             {/* Stats Grid */}
             <div className="grid grid-cols-2 gap-6">
               <div className="glass p-6 rounded-xl text-center hover-glow transition-all duration-300">
-                <div className="text-4xl font-bold gradient-text mb-2">3+</div>
+                <div className="text-4xl font-bold gradient-text mb-2">{profileSettings?.stat_years_experience || "3+"}</div>
                 <div className="text-muted-foreground text-sm">Years Experience</div>
               </div>
               <div className="glass p-6 rounded-xl text-center hover-glow transition-all duration-300">
-                <div className="text-4xl font-bold gradient-text mb-2">25+</div>
+                <div className="text-4xl font-bold gradient-text mb-2">{profileSettings?.stat_projects_completed || "25+"}</div>
                 <div className="text-muted-foreground text-sm">Projects Completed</div>
               </div>
               <div className="glass p-6 rounded-xl text-center hover-glow transition-all duration-300">
-                <div className="text-4xl font-bold gradient-text mb-2">15+</div>
+                <div className="text-4xl font-bold gradient-text mb-2">{profileSettings?.stat_technologies || "15+"}</div>
                 <div className="text-muted-foreground text-sm">Technologies</div>
               </div>
               <div className="glass p-6 rounded-xl text-center hover-glow transition-all duration-300">
-                <div className="text-4xl font-bold gradient-text mb-2">100%</div>
+                <div className="text-4xl font-bold gradient-text mb-2">{profileSettings?.stat_client_satisfaction || "100%"}</div>
                 <div className="text-muted-foreground text-sm">Client Satisfaction</div>
               </div>
             </div>
