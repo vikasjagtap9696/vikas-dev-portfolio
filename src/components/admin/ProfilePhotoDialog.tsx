@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, ReactNode } from "react";
 import { Camera, Upload, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +12,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfileSettings, useUpdateProfileSettings, useUploadAvatar } from "@/hooks/useProfileSettings";
 import { toast } from "sonner";
 
-export function ProfilePhotoDialog() {
+interface ProfilePhotoDialogProps {
+  trigger?: ReactNode;
+}
+
+export function ProfilePhotoDialog({ trigger }: ProfilePhotoDialogProps) {
   const [open, setOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -28,6 +32,7 @@ export function ProfilePhotoDialog() {
       const publicUrl = await uploadAvatar.mutateAsync(file);
       await updateSettings.mutateAsync({ id: settings.id, avatar_url: publicUrl });
       toast.success("Profile photo updated!");
+      setOpen(false);
     } catch (error) {
       toast.error("Failed to upload photo");
     }
@@ -46,13 +51,17 @@ export function ProfilePhotoDialog() {
 
   const isLoading = uploadAvatar.isPending || updateSettings.isPending;
 
+  const defaultTrigger = (
+    <button className="w-full text-left px-2 py-1.5 text-sm hover:bg-accent rounded-sm flex items-center gap-2">
+      <Camera className="h-4 w-4" />
+      Profile Photo
+    </button>
+  );
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Camera className="h-4 w-4 mr-2" />
-          Profile Photo
-        </Button>
+        {trigger || defaultTrigger}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -60,7 +69,7 @@ export function ProfilePhotoDialog() {
         </DialogHeader>
         <div className="flex flex-col items-center gap-6 py-4">
           <Avatar className="h-32 w-32">
-            <AvatarImage src={settings?.avatar_url || ""} alt="Profile" />
+            <AvatarImage src={settings?.avatar_url || ""} alt="Profile" className="object-cover" />
             <AvatarFallback className="text-2xl">VP</AvatarFallback>
           </Avatar>
           
