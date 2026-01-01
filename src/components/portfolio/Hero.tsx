@@ -1,4 +1,4 @@
-import { ArrowDown, Github, Linkedin, Mail, Download } from "lucide-react";
+import { ArrowDown, Github, Linkedin, Mail, Twitter, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function Hero() {
@@ -28,7 +28,7 @@ export function Hero() {
             </p>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4">
               <span className="text-foreground animate-fade-in" style={{ animationDelay: "0.1s" }}>
-                Vikas
+                Vikas Prakash
               </span>{" "}
               <span className="gradient-text animate-fade-in" style={{ animationDelay: "0.2s" }}>
                 Jagtap
@@ -38,8 +38,8 @@ export function Hero() {
               Full Stack Web Developer
             </h2>
             <p className="text-muted-foreground max-w-xl mb-8 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-              Crafting modern, scalable web applications with cutting-edge technologies. 
-              Passionate about clean code, intuitive UI/UX, and delivering exceptional user experiences.
+              Passionate developer building scalable web applications with React, Node.js, Java, SQL, and PostgreSQL. 
+              Focused on cybersecurity and continuously improving through real-world projects.
             </p>
 
             {/* CTA Buttons */}
@@ -57,12 +57,13 @@ export function Hero() {
                 className="border-primary/50 text-foreground hover:bg-primary/10 gradient-border"
                 onClick={() => handleScroll("#contact")}
               >
-                Contact Me
+                Hire Me
               </Button>
               <Button
                 size="lg"
                 variant="ghost"
                 className="text-muted-foreground hover:text-foreground"
+                onClick={() => handleScroll("#resume")}
               >
                 <Download className="mr-2 h-4 w-4" />
                 Resume
@@ -72,24 +73,36 @@ export function Hero() {
             {/* Social Links */}
             <div className="flex gap-4 justify-center lg:justify-start animate-fade-in" style={{ animationDelay: "0.6s" }}>
               <a
-                href="https://github.com/vikasjagtap"
+                href="https://github.com/vikasjagtap9696"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-3 rounded-full glass hover-glow transition-all duration-300 hover:scale-110"
+                aria-label="GitHub"
               >
                 <Github className="h-5 w-5" />
               </a>
               <a
-                href="https://linkedin.com/in/vikasjagtap"
+                href="https://www.linkedin.com/in/vikas-jagtap"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-3 rounded-full glass hover-glow transition-all duration-300 hover:scale-110"
+                aria-label="LinkedIn"
               >
                 <Linkedin className="h-5 w-5" />
               </a>
               <a
-                href="mailto:vikas@example.com"
+                href="https://twitter.com/yourusername"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-3 rounded-full glass hover-glow transition-all duration-300 hover:scale-110"
+                aria-label="Twitter"
+              >
+                <Twitter className="h-5 w-5" />
+              </a>
+              <a
+                href="mailto:vikasjagtap.9696@gmail.com"
+                className="p-3 rounded-full glass hover-glow transition-all duration-300 hover:scale-110"
+                aria-label="Email"
               >
                 <Mail className="h-5 w-5" />
               </a>

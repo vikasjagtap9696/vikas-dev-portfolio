@@ -45,7 +45,7 @@ export function Navbar() {
           }}
           className="text-2xl font-bold gradient-text"
         >
-          VJ
+          VPJ
         </a>
 
         {/* Desktop Navigation */}
