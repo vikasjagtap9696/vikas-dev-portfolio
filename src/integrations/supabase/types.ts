@@ -157,6 +157,9 @@ export type Database = {
           career_goals: string[] | null
           created_at: string
           email: string | null
+          footer_copyright: string | null
+          footer_location: string | null
+          footer_tagline: string | null
           github_url: string | null
           hero_background_url: string | null
           hero_bio: string | null
@@ -182,6 +185,9 @@ export type Database = {
           career_goals?: string[] | null
           created_at?: string
           email?: string | null
+          footer_copyright?: string | null
+          footer_location?: string | null
+          footer_tagline?: string | null
           github_url?: string | null
           hero_background_url?: string | null
           hero_bio?: string | null
@@ -207,6 +213,9 @@ export type Database = {
           career_goals?: string[] | null
           created_at?: string
           email?: string | null
+          footer_copyright?: string | null
+          footer_location?: string | null
+          footer_tagline?: string | null
           github_url?: string | null
           hero_background_url?: string | null
           hero_bio?: string | null

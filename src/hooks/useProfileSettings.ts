@@ -23,6 +23,9 @@ interface ProfileSettings {
   stat_projects_completed: string | null;
   stat_technologies: string | null;
   stat_client_satisfaction: string | null;
+  footer_tagline: string | null;
+  footer_copyright: string | null;
+  footer_location: string | null;
 }
 
 export function useProfileSettings() {
@@ -67,6 +70,9 @@ export function useUpdateProfileSettings() {
       stat_projects_completed?: string | null;
       stat_technologies?: string | null;
       stat_client_satisfaction?: string | null;
+      footer_tagline?: string | null;
+      footer_copyright?: string | null;
+      footer_location?: string | null;
     }) => {
       const { id, ...fieldsToUpdate } = updates;
       const { error } = await supabase
