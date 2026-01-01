@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 export interface NotificationSettings {
   id: string;
   notification_email: string;
+  send_confirmation_email: boolean;
   updated_at: string;
 }
 
@@ -27,18 +28,24 @@ export function useNotificationSettings() {
   });
 
   const updateSettings = useMutation({
-    mutationFn: async (email: string) => {
+    mutationFn: async (data: { email: string; sendConfirmation: boolean }) => {
       if (settings?.id) {
         const { error } = await supabase
           .from("notification_settings")
-          .update({ notification_email: email })
+          .update({ 
+            notification_email: data.email,
+            send_confirmation_email: data.sendConfirmation 
+          })
           .eq("id", settings.id);
 
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from("notification_settings")
-          .insert({ notification_email: email });
+          .insert({ 
+            notification_email: data.email,
+            send_confirmation_email: data.sendConfirmation 
+          });
 
         if (error) throw error;
       }

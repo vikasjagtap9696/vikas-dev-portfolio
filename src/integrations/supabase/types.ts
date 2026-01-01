@@ -127,18 +127,21 @@ export type Database = {
           created_at: string
           id: string
           notification_email: string
+          send_confirmation_email: boolean
           updated_at: string
         }
         Insert: {
           created_at?: string
           id?: string
           notification_email?: string
+          send_confirmation_email?: boolean
           updated_at?: string
         }
         Update: {
           created_at?: string
           id?: string
           notification_email?: string
+          send_confirmation_email?: boolean
           updated_at?: string
         }
         Relationships: []
