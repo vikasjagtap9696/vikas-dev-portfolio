@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut, Shield, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { InviteAdminDialog } from "./InviteAdminDialog";
+import { ContactSubmissionsDialog } from "./ContactSubmissionsDialog";
 
 export function AdminToolbar() {
   const { isAdmin, signOut, user } = useAuth();
@@ -19,6 +20,7 @@ export function AdminToolbar() {
             <span className="text-sm font-medium">Admin Mode</span>
           </div>
           <div className="h-4 w-px bg-border" />
+          <ContactSubmissionsDialog />
           <Button
             variant="ghost"
             size="sm"
