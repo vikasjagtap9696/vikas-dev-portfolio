@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen, RotateCcw, Volume2, VolumeX, Download } from "lucide-react";
+import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen, RotateCcw, Volume2, VolumeX, Download, Mic, MicOff, Copy, Check } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -47,6 +48,43 @@ const TypingIndicator = () => (
   </div>
 );
 
+// Code block with copy button
+const CodeBlock = ({ language, children }: { language: string; children: string }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(children);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="relative group">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={handleCopy}
+        className="absolute right-1 top-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background"
+        title="Copy code"
+      >
+        {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+      </Button>
+      <SyntaxHighlighter
+        style={oneDark}
+        language={language}
+        PreTag="div"
+        customStyle={{
+          margin: "0.5rem 0",
+          borderRadius: "0.375rem",
+          fontSize: "0.75rem",
+        }}
+      >
+        {children}
+      </SyntaxHighlighter>
+    </div>
+  );
+};
+
 // Generate a notification sound using Web Audio API
 const playNotificationSound = () => {
   try {
@@ -70,7 +108,11 @@ const playNotificationSound = () => {
   }
 };
 
+// Speech Recognition setup
+const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
 export function AIChatbot() {
+  const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>(() => {
     try {
@@ -88,6 +130,7 @@ export function AIChatbot() {
   const [isLoading, setIsLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isListening, setIsListening] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(() => {
     try {
       return localStorage.getItem("vikas-ai-sound") !== "false";
@@ -96,6 +139,65 @@ export function AIChatbot() {
     }
   });
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if (SpeechRecognition) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = true;
+      recognitionRef.current.lang = "en-US";
+
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = Array.from(event.results)
+          .map((result: any) => result[0].transcript)
+          .join("");
+        setInput(transcript);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onerror = (event: any) => {
+        console.error("Speech recognition error:", event.error);
+        setIsListening(false);
+        if (event.error === "not-allowed") {
+          toast({
+            title: "Microphone access denied",
+            description: "Please allow microphone access to use voice input.",
+            variant: "destructive",
+          });
+        }
+      };
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, [toast]);
+
+  const toggleListening = useCallback(() => {
+    if (!SpeechRecognition) {
+      toast({
+        title: "Voice input not supported",
+        description: "Your browser does not support speech recognition.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current?.start();
+      setIsListening(true);
+    }
+  }, [isListening, toast]);
 
   // Clear unread count when chat opens
   useEffect(() => {
@@ -409,7 +511,7 @@ export function AIChatbot() {
                             ol: ({ children }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
                             li: ({ children }) => <li className="mb-1">{children}</li>,
                             strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                            code: ({ children, className, ...props }) => {
+                            code: ({ children, className }) => {
                               const match = /language-(\w+)/.exec(className || "");
                               const isInline = !className;
                               
@@ -422,18 +524,9 @@ export function AIChatbot() {
                               }
                               
                               return (
-                                <SyntaxHighlighter
-                                  style={oneDark}
-                                  language={match ? match[1] : "text"}
-                                  PreTag="div"
-                                  customStyle={{
-                                    margin: "0.5rem 0",
-                                    borderRadius: "0.375rem",
-                                    fontSize: "0.75rem",
-                                  }}
-                                >
+                                <CodeBlock language={match ? match[1] : "text"}>
                                   {String(children).replace(/\n$/, "")}
-                                </SyntaxHighlighter>
+                                </CodeBlock>
                               );
                             },
                             pre: ({ children }) => <>{children}</>,
@@ -485,13 +578,26 @@ export function AIChatbot() {
             <div className="border-t p-4">
               <div className="flex gap-2">
                 <Input
-                  placeholder="Ask me anything..."
+                  placeholder={isListening ? "Listening..." : "Ask me anything..."}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  disabled={isLoading}
+                  disabled={isLoading || isListening}
                   className="flex-1"
                 />
+                <Button
+                  onClick={toggleListening}
+                  variant={isListening ? "destructive" : "outline"}
+                  size="icon"
+                  disabled={isLoading}
+                  title={isListening ? "Stop listening" : "Voice input"}
+                >
+                  {isListening ? (
+                    <MicOff className="h-4 w-4" />
+                  ) : (
+                    <Mic className="h-4 w-4" />
+                  )}
+                </Button>
                 <Button
                   onClick={() => sendMessage()}
                   disabled={!input.trim() || isLoading}
