@@ -4,8 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen, RotateCcw, Volume2, VolumeX, Download, Mic, MicOff, Copy, Check, PlayCircle, StopCircle, Tag, ChevronDown, ChevronUp } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen, RotateCcw, Volume2, VolumeX, Download, Mic, MicOff, Copy, Check, PlayCircle, StopCircle, Tag, ChevronDown, ChevronUp, Sun, Moon, Gauge } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "next-themes";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -15,6 +17,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 type Topic = "general" | "projects" | "services" | "tech" | "contact";
 
@@ -142,6 +149,7 @@ const SpeechRecognition = (window as any).SpeechRecognition || (window as any).w
 
 export function AIChatbot() {
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>(() => {
     try {
@@ -164,6 +172,14 @@ export function AIChatbot() {
   const [speakingMessageIndex, setSpeakingMessageIndex] = useState<number | null>(null);
   const [topicFilter, setTopicFilter] = useState<Topic | "all">("all");
   const [showTopicFilter, setShowTopicFilter] = useState(false);
+  const [typingSpeed, setTypingSpeed] = useState(() => {
+    try {
+      const saved = localStorage.getItem("vikas-ai-typing-speed");
+      return saved ? parseInt(saved, 10) : 0; // 0 = instant, higher = slower
+    } catch {
+      return 0;
+    }
+  });
   const [soundEnabled, setSoundEnabled] = useState(() => {
     try {
       return localStorage.getItem("vikas-ai-sound") !== "false";
@@ -174,6 +190,21 @@ export function AIChatbot() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const speechSynthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const typingQueueRef = useRef<string[]>([]);
+  const isProcessingQueueRef = useRef(false);
+
+  // Save typing speed preference
+  useEffect(() => {
+    try {
+      localStorage.setItem("vikas-ai-typing-speed", String(typingSpeed));
+    } catch (error) {
+      console.log("Could not save typing speed:", error);
+    }
+  }, [typingSpeed]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  }, [theme, setTheme]);
 
   // Text-to-speech function
   const speakMessage = useCallback((text: string, messageIndex: number) => {
@@ -435,9 +466,36 @@ export function AIChatbot() {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let textBuffer = "";
+      let displayedContent = "";
 
       setIsTyping(false);
       setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+      // Process the queue with typing effect
+      const processQueue = async () => {
+        if (isProcessingQueueRef.current) return;
+        isProcessingQueueRef.current = true;
+
+        while (typingQueueRef.current.length > 0) {
+          const char = typingQueueRef.current.shift();
+          if (char) {
+            displayedContent += char;
+            setMessages((prev) => {
+              const newMessages = [...prev];
+              newMessages[newMessages.length - 1] = {
+                role: "assistant",
+                content: displayedContent,
+              };
+              return newMessages;
+            });
+            if (typingSpeed > 0) {
+              await new Promise(resolve => setTimeout(resolve, typingSpeed));
+            }
+          }
+        }
+
+        isProcessingQueueRef.current = false;
+      };
 
       while (true) {
         const { done, value } = await reader.read();
@@ -462,20 +520,36 @@ export function AIChatbot() {
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) {
               assistantContent += content;
-              setMessages((prev) => {
-                const newMessages = [...prev];
-                newMessages[newMessages.length - 1] = {
-                  role: "assistant",
-                  content: assistantContent,
-                };
-                return newMessages;
-              });
+              if (typingSpeed > 0) {
+                // Add to queue for typing effect
+                for (const char of content) {
+                  typingQueueRef.current.push(char);
+                }
+                processQueue();
+              } else {
+                // Instant display
+                displayedContent = assistantContent;
+                setMessages((prev) => {
+                  const newMessages = [...prev];
+                  newMessages[newMessages.length - 1] = {
+                    role: "assistant",
+                    content: assistantContent,
+                  };
+                  return newMessages;
+                });
+              }
             }
           } catch {
             textBuffer = line + "\n" + textBuffer;
             break;
           }
         }
+      }
+
+      // Finish processing any remaining queue
+      while (typingQueueRef.current.length > 0) {
+        await processQueue();
+        await new Promise(resolve => setTimeout(resolve, 10));
       }
 
       // Play notification sound and increment unread count when response is complete
@@ -545,6 +619,47 @@ export function AIChatbot() {
               <CardTitle className="text-lg font-semibold">Vikas AI Assistant</CardTitle>
             </div>
             <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
+                title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
+                    title="Typing speed"
+                  >
+                    <Gauge className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56" align="end">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Typing Speed</span>
+                      <span className="text-xs text-muted-foreground">
+                        {typingSpeed === 0 ? "Instant" : typingSpeed <= 10 ? "Fast" : typingSpeed <= 30 ? "Normal" : "Slow"}
+                      </span>
+                    </div>
+                    <Slider
+                      value={[typingSpeed]}
+                      onValueChange={(value) => setTypingSpeed(value[0])}
+                      max={50}
+                      step={5}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Adjust how fast AI responses appear
+                    </p>
+                  </div>
+                </PopoverContent>
+              </Popover>
               <Button
                 variant="ghost"
                 size="icon"
