@@ -154,6 +154,10 @@ export type Database = {
           email: string | null
           github_url: string | null
           hero_background_url: string | null
+          hero_bio: string | null
+          hero_name: string | null
+          hero_subtitle: string | null
+          hero_title: string | null
           id: string
           linkedin_url: string | null
           twitter_url: string | null
@@ -166,6 +170,10 @@ export type Database = {
           email?: string | null
           github_url?: string | null
           hero_background_url?: string | null
+          hero_bio?: string | null
+          hero_name?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
           id?: string
           linkedin_url?: string | null
           twitter_url?: string | null
@@ -178,6 +186,10 @@ export type Database = {
           email?: string | null
           github_url?: string | null
           hero_background_url?: string | null
+          hero_bio?: string | null
+          hero_name?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
           id?: string
           linkedin_url?: string | null
           twitter_url?: string | null
