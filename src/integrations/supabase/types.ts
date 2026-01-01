@@ -47,6 +47,51 @@ export type Database = {
         }
         Relationships: []
       }
+      experiences: {
+        Row: {
+          company: string
+          created_at: string
+          description: string[] | null
+          display_order: number | null
+          experience_type: string | null
+          id: string
+          is_current: boolean | null
+          location: string | null
+          period: string
+          technologies: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company: string
+          created_at?: string
+          description?: string[] | null
+          display_order?: number | null
+          experience_type?: string | null
+          id?: string
+          is_current?: boolean | null
+          location?: string | null
+          period: string
+          technologies?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company?: string
+          created_at?: string
+          description?: string[] | null
+          display_order?: number | null
+          experience_type?: string | null
+          id?: string
+          is_current?: boolean | null
+          location?: string | null
+          period?: string
+          technologies?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
