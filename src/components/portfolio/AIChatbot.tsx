@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
-import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen, RotateCcw, Volume2, VolumeX, Download, Mic, MicOff, Copy, Check, PlayCircle, StopCircle, Tag, ChevronDown, ChevronUp, Sun, Moon, Gauge } from "lucide-react";
+import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen, RotateCcw, Volume2, VolumeX, Download, Mic, MicOff, Copy, Check, PlayCircle, StopCircle, Tag, ChevronDown, ChevronUp, Sun, Moon, Gauge, ThumbsUp, ThumbsDown, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "next-themes";
 import ReactMarkdown from "react-markdown";
@@ -25,10 +25,13 @@ import {
 
 type Topic = "general" | "projects" | "services" | "tech" | "contact";
 
+type Reaction = "up" | "down" | null;
+
 type Message = {
   role: "user" | "assistant";
   content: string;
   topic?: Topic;
+  reaction?: Reaction;
 };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/portfolio-assistant`;
@@ -172,6 +175,8 @@ export function AIChatbot() {
   const [speakingMessageIndex, setSpeakingMessageIndex] = useState<number | null>(null);
   const [topicFilter, setTopicFilter] = useState<Topic | "all">("all");
   const [showTopicFilter, setShowTopicFilter] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
   const [typingSpeed, setTypingSpeed] = useState(() => {
     try {
       const saved = localStorage.getItem("vikas-ai-typing-speed");
@@ -267,6 +272,32 @@ export function AIChatbot() {
     };
   }, []);
 
+  // Handle message reactions
+  const handleReaction = useCallback((messageIndex: number, reaction: Reaction) => {
+    setMessages((prev) => {
+      const newMessages = [...prev];
+      const currentReaction = newMessages[messageIndex].reaction;
+      // Toggle off if clicking same reaction, otherwise set new reaction
+      newMessages[messageIndex] = {
+        ...newMessages[messageIndex],
+        reaction: currentReaction === reaction ? null : reaction,
+      };
+      return newMessages;
+    });
+    
+    if (reaction === "up") {
+      toast({
+        title: "Thanks for the feedback!",
+        description: "Glad you found this helpful.",
+      });
+    } else if (reaction === "down") {
+      toast({
+        title: "Thanks for the feedback!",
+        description: "We'll work on improving.",
+      });
+    }
+  }, [toast]);
+
   // Get topic statistics
   const topicStats = messages.reduce((acc, msg) => {
     if (msg.role === "user" && msg.topic) {
@@ -275,16 +306,29 @@ export function AIChatbot() {
     return acc;
   }, {} as Record<Topic, number>);
 
-  // Filter messages by topic
-  const filteredMessages = topicFilter === "all" 
-    ? messages 
-    : messages.filter((msg, idx) => {
-        if (idx === 0) return true; // Always show initial message
-        if (msg.topic === topicFilter) return true;
-        // Show assistant responses that follow a message with matching topic
-        const prevMsg = messages[idx - 1];
-        return prevMsg?.topic === topicFilter && msg.role === "assistant";
-      });
+  // Filter messages by topic and search query
+  const filteredMessages = messages.filter((msg, idx) => {
+    // Always show initial message unless searching
+    if (idx === 0 && !searchQuery) return true;
+    
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      if (!msg.content.toLowerCase().includes(query)) {
+        return false;
+      }
+    }
+    
+    // Apply topic filter
+    if (topicFilter !== "all") {
+      if (msg.topic === topicFilter) return true;
+      // Show assistant responses that follow a message with matching topic
+      const prevMsg = messages[idx - 1];
+      return prevMsg?.topic === topicFilter && msg.role === "assistant";
+    }
+    
+    return true;
+  });
 
   // Initialize speech recognition
   useEffect(() => {
@@ -713,19 +757,55 @@ export function AIChatbot() {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            {/* Topic Filter */}
+            {/* Search and Filter Bar */}
             {messages.length > 2 && (
-              <div className="border-b px-4 py-2">
-                <button
-                  onClick={() => setShowTopicFilter(!showTopicFilter)}
-                  className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors w-full"
-                >
-                  <Tag className="h-3 w-3" />
-                  <span>Filter by topic</span>
-                  {showTopicFilter ? <ChevronUp className="h-3 w-3 ml-auto" /> : <ChevronDown className="h-3 w-3 ml-auto" />}
-                </button>
+              <div className="border-b px-4 py-2 space-y-2">
+                {/* Search Toggle */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowSearch(!showSearch)}
+                    className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Search className="h-3 w-3" />
+                    <span>Search</span>
+                  </button>
+                  <span className="text-muted-foreground/50">|</span>
+                  <button
+                    onClick={() => setShowTopicFilter(!showTopicFilter)}
+                    className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors flex-1"
+                  >
+                    <Tag className="h-3 w-3" />
+                    <span>Filter by topic</span>
+                    {showTopicFilter ? <ChevronUp className="h-3 w-3 ml-auto" /> : <ChevronDown className="h-3 w-3 ml-auto" />}
+                  </button>
+                </div>
+
+                {/* Search Input */}
+                {showSearch && (
+                  <div className="relative">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                    <Input
+                      placeholder="Search messages..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="h-7 pl-7 text-xs"
+                    />
+                    {searchQuery && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setSearchQuery("")}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-5 w-5"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                )}
+
+                {/* Topic Filter */}
                 {showTopicFilter && (
-                  <div className="flex flex-wrap gap-1 mt-2">
+                  <div className="flex flex-wrap gap-1">
                     <Badge
                       variant={topicFilter === "all" ? "default" : "outline"}
                       className="cursor-pointer text-xs"
@@ -744,6 +824,13 @@ export function AIChatbot() {
                       </Badge>
                     ))}
                   </div>
+                )}
+
+                {/* Search Results Count */}
+                {searchQuery && (
+                  <p className="text-xs text-muted-foreground">
+                    Found {filteredMessages.length} message{filteredMessages.length !== 1 ? "s" : ""}
+                  </p>
                 )}
               </div>
             )}
@@ -820,24 +907,46 @@ export function AIChatbot() {
                           )}
                         </div>
                         {message.role === "assistant" && message.content && originalIndex > 0 && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => speakMessage(message.content, originalIndex)}
-                            className="self-start h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
-                          >
-                            {speakingMessageIndex === originalIndex ? (
-                              <>
-                                <StopCircle className="h-3 w-3 mr-1" />
-                                Stop
-                              </>
-                            ) : (
-                              <>
-                                <PlayCircle className="h-3 w-3 mr-1" />
-                                Listen
-                              </>
-                            )}
-                          </Button>
+                          <div className="flex items-center gap-1 self-start">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => speakMessage(message.content, originalIndex)}
+                              className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+                            >
+                              {speakingMessageIndex === originalIndex ? (
+                                <>
+                                  <StopCircle className="h-3 w-3 mr-1" />
+                                  Stop
+                                </>
+                              ) : (
+                                <>
+                                  <PlayCircle className="h-3 w-3 mr-1" />
+                                  Listen
+                                </>
+                              )}
+                            </Button>
+                            <div className="flex items-center gap-0.5 border-l pl-1 ml-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleReaction(originalIndex, "up")}
+                                className={`h-6 w-6 ${message.reaction === "up" ? "text-green-500" : "text-muted-foreground hover:text-foreground"}`}
+                                title="Helpful"
+                              >
+                                <ThumbsUp className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleReaction(originalIndex, "down")}
+                                className={`h-6 w-6 ${message.reaction === "down" ? "text-red-500" : "text-muted-foreground hover:text-foreground"}`}
+                                title="Not helpful"
+                              >
+                                <ThumbsDown className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
                         )}
                       </div>
                       {message.role === "user" && (
