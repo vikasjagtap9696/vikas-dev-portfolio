@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen, RotateCcw, Volume2, VolumeX, Download, Mic, MicOff, Copy, Check } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen, RotateCcw, Volume2, VolumeX, Download, Mic, MicOff, Copy, Check, PlayCircle, StopCircle, Tag, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -15,19 +16,47 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+type Topic = "general" | "projects" | "services" | "tech" | "contact";
+
 type Message = {
   role: "user" | "assistant";
   content: string;
+  topic?: Topic;
 };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/portfolio-assistant`;
 const STORAGE_KEY = "vikas-ai-chat-history";
 
+const topicLabels: Record<Topic, { label: string; color: string }> = {
+  general: { label: "General", color: "bg-muted text-muted-foreground" },
+  projects: { label: "Projects", color: "bg-blue-500/20 text-blue-600 dark:text-blue-400" },
+  services: { label: "Services", color: "bg-green-500/20 text-green-600 dark:text-green-400" },
+  tech: { label: "Tech Stack", color: "bg-purple-500/20 text-purple-600 dark:text-purple-400" },
+  contact: { label: "Contact", color: "bg-orange-500/20 text-orange-600 dark:text-orange-400" },
+};
+
+const detectTopic = (message: string): Topic => {
+  const lowerMessage = message.toLowerCase();
+  if (lowerMessage.includes("project") || lowerMessage.includes("portfolio") || lowerMessage.includes("work")) {
+    return "projects";
+  }
+  if (lowerMessage.includes("service") || lowerMessage.includes("offer") || lowerMessage.includes("hire")) {
+    return "services";
+  }
+  if (lowerMessage.includes("tech") || lowerMessage.includes("stack") || lowerMessage.includes("language") || lowerMessage.includes("framework")) {
+    return "tech";
+  }
+  if (lowerMessage.includes("contact") || lowerMessage.includes("email") || lowerMessage.includes("reach") || lowerMessage.includes("hire")) {
+    return "contact";
+  }
+  return "general";
+};
+
 const quickReplies = [
-  { label: "View Projects", icon: FolderOpen, message: "Show me your portfolio projects" },
-  { label: "Services", icon: Briefcase, message: "What services do you offer?" },
-  { label: "Tech Stack", icon: Code, message: "What technologies do you use?" },
-  { label: "Contact", icon: Mail, message: "How can I contact Vikas for a project?" },
+  { label: "View Projects", icon: FolderOpen, message: "Show me your portfolio projects", topic: "projects" as Topic },
+  { label: "Services", icon: Briefcase, message: "What services do you offer?", topic: "services" as Topic },
+  { label: "Tech Stack", icon: Code, message: "What technologies do you use?", topic: "tech" as Topic },
+  { label: "Contact", icon: Mail, message: "How can I contact Vikas for a project?", topic: "contact" as Topic },
 ];
 
 const initialMessage: Message = {
@@ -131,6 +160,10 @@ export function AIChatbot() {
   const [isTyping, setIsTyping] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speakingMessageIndex, setSpeakingMessageIndex] = useState<number | null>(null);
+  const [topicFilter, setTopicFilter] = useState<Topic | "all">("all");
+  const [showTopicFilter, setShowTopicFilter] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(() => {
     try {
       return localStorage.getItem("vikas-ai-sound") !== "false";
@@ -140,6 +173,87 @@ export function AIChatbot() {
   });
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
+  const speechSynthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  // Text-to-speech function
+  const speakMessage = useCallback((text: string, messageIndex: number) => {
+    if (!window.speechSynthesis) {
+      toast({
+        title: "Text-to-speech not supported",
+        description: "Your browser does not support text-to-speech.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Stop current speech if playing
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      setSpeakingMessageIndex(null);
+      return;
+    }
+
+    // Clean markdown from text
+    const cleanText = text
+      .replace(/```[\s\S]*?```/g, "code block")
+      .replace(/`([^`]+)`/g, "$1")
+      .replace(/\*\*([^*]+)\*\*/g, "$1")
+      .replace(/\*([^*]+)\*/g, "$1")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .replace(/#{1,6}\s/g, "");
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+      setSpeakingMessageIndex(messageIndex);
+    };
+
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      setSpeakingMessageIndex(null);
+    };
+
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+      setSpeakingMessageIndex(null);
+    };
+
+    speechSynthesisRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+  }, [isSpeaking, toast]);
+
+  // Stop speech on unmount
+  useEffect(() => {
+    return () => {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  // Get topic statistics
+  const topicStats = messages.reduce((acc, msg) => {
+    if (msg.role === "user" && msg.topic) {
+      acc[msg.topic] = (acc[msg.topic] || 0) + 1;
+    }
+    return acc;
+  }, {} as Record<Topic, number>);
+
+  // Filter messages by topic
+  const filteredMessages = topicFilter === "all" 
+    ? messages 
+    : messages.filter((msg, idx) => {
+        if (idx === 0) return true; // Always show initial message
+        if (msg.topic === topicFilter) return true;
+        // Show assistant responses that follow a message with matching topic
+        const prevMsg = messages[idx - 1];
+        return prevMsg?.topic === topicFilter && msg.role === "assistant";
+      });
 
   // Initialize speech recognition
   useEffect(() => {
@@ -285,15 +399,17 @@ export function AIChatbot() {
     URL.revokeObjectURL(url);
   }, [messages]);
 
-  const sendMessage = async (messageText?: string) => {
+  const sendMessage = async (messageText?: string, messageTopic?: Topic) => {
     const text = messageText || input.trim();
     if (!text || isLoading) return;
 
-    const userMessage: Message = { role: "user", content: text };
+    const topic = messageTopic || detectTopic(text);
+    const userMessage: Message = { role: "user", content: text, topic };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
     setIsTyping(true);
+    setTopicFilter("all"); // Reset filter when sending a new message
 
     let assistantContent = "";
 
@@ -385,8 +501,8 @@ export function AIChatbot() {
     }
   };
 
-  const handleQuickReply = (message: string) => {
-    sendMessage(message);
+  const handleQuickReply = (message: string, topic: Topic) => {
+    sendMessage(message, topic);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -482,74 +598,141 @@ export function AIChatbot() {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <ScrollArea className="h-[400px] p-4" ref={scrollAreaRef}>
+            {/* Topic Filter */}
+            {messages.length > 2 && (
+              <div className="border-b px-4 py-2">
+                <button
+                  onClick={() => setShowTopicFilter(!showTopicFilter)}
+                  className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors w-full"
+                >
+                  <Tag className="h-3 w-3" />
+                  <span>Filter by topic</span>
+                  {showTopicFilter ? <ChevronUp className="h-3 w-3 ml-auto" /> : <ChevronDown className="h-3 w-3 ml-auto" />}
+                </button>
+                {showTopicFilter && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    <Badge
+                      variant={topicFilter === "all" ? "default" : "outline"}
+                      className="cursor-pointer text-xs"
+                      onClick={() => setTopicFilter("all")}
+                    >
+                      All ({messages.length - 1})
+                    </Badge>
+                    {(Object.keys(topicStats) as Topic[]).map((topic) => (
+                      <Badge
+                        key={topic}
+                        variant={topicFilter === topic ? "default" : "outline"}
+                        className={`cursor-pointer text-xs ${topicFilter !== topic ? topicLabels[topic].color : ""}`}
+                        onClick={() => setTopicFilter(topic)}
+                      >
+                        {topicLabels[topic].label} ({topicStats[topic]})
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <ScrollArea className="h-[350px] p-4" ref={scrollAreaRef}>
               <div className="space-y-4">
-                {messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`flex gap-3 animate-fade-in ${
-                      message.role === "user" ? "justify-end" : "justify-start"
-                    }`}
-                  >
-                    {message.role === "assistant" && (
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                        <Bot className="h-4 w-4" />
-                      </div>
-                    )}
+                {filteredMessages.map((message, index) => {
+                  const originalIndex = messages.indexOf(message);
+                  return (
                     <div
-                      className={`max-w-[80%] rounded-lg px-4 py-2 text-sm ${
-                        message.role === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted prose prose-sm prose-neutral dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
+                      key={originalIndex}
+                      className={`flex gap-3 animate-fade-in ${
+                        message.role === "user" ? "justify-end" : "justify-start"
                       }`}
                     >
-                      {message.role === "assistant" ? (
-                        <ReactMarkdown
-                          components={{
-                            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                            ul: ({ children }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
-                            ol: ({ children }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
-                            li: ({ children }) => <li className="mb-1">{children}</li>,
-                            strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                            code: ({ children, className }) => {
-                              const match = /language-(\w+)/.exec(className || "");
-                              const isInline = !className;
-                              
-                              if (isInline) {
-                                return (
-                                  <code className="bg-background/50 px-1 py-0.5 rounded text-xs font-mono">
-                                    {children}
-                                  </code>
-                                );
-                              }
-                              
-                              return (
-                                <CodeBlock language={match ? match[1] : "text"}>
-                                  {String(children).replace(/\n$/, "")}
-                                </CodeBlock>
-                              );
-                            },
-                            pre: ({ children }) => <>{children}</>,
-                            a: ({ href, children }) => (
-                              <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:no-underline">
-                                {children}
-                              </a>
-                            ),
-                          }}
+                      {message.role === "assistant" && (
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                          <Bot className="h-4 w-4" />
+                        </div>
+                      )}
+                      <div className="flex flex-col gap-1 max-w-[80%]">
+                        {message.role === "user" && message.topic && (
+                          <div className="flex justify-end">
+                            <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${topicLabels[message.topic].color}`}>
+                              {topicLabels[message.topic].label}
+                            </Badge>
+                          </div>
+                        )}
+                        <div
+                          className={`rounded-lg px-4 py-2 text-sm ${
+                            message.role === "user"
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted prose prose-sm prose-neutral dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
+                          }`}
                         >
-                          {message.content}
-                        </ReactMarkdown>
-                      ) : (
-                        message.content
+                          {message.role === "assistant" ? (
+                            <ReactMarkdown
+                              components={{
+                                p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                                ul: ({ children }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
+                                ol: ({ children }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
+                                li: ({ children }) => <li className="mb-1">{children}</li>,
+                                strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                                code: ({ children, className }) => {
+                                  const match = /language-(\w+)/.exec(className || "");
+                                  const isInline = !className;
+                                  
+                                  if (isInline) {
+                                    return (
+                                      <code className="bg-background/50 px-1 py-0.5 rounded text-xs font-mono">
+                                        {children}
+                                      </code>
+                                    );
+                                  }
+                                  
+                                  return (
+                                    <CodeBlock language={match ? match[1] : "text"}>
+                                      {String(children).replace(/\n$/, "")}
+                                    </CodeBlock>
+                                  );
+                                },
+                                pre: ({ children }) => <>{children}</>,
+                                a: ({ href, children }) => (
+                                  <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:no-underline">
+                                    {children}
+                                  </a>
+                                ),
+                              }}
+                            >
+                              {message.content}
+                            </ReactMarkdown>
+                          ) : (
+                            message.content
+                          )}
+                        </div>
+                        {message.role === "assistant" && message.content && originalIndex > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => speakMessage(message.content, originalIndex)}
+                            className="self-start h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+                          >
+                            {speakingMessageIndex === originalIndex ? (
+                              <>
+                                <StopCircle className="h-3 w-3 mr-1" />
+                                Stop
+                              </>
+                            ) : (
+                              <>
+                                <PlayCircle className="h-3 w-3 mr-1" />
+                                Listen
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                      {message.role === "user" && (
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
+                          <User className="h-4 w-4" />
+                        </div>
                       )}
                     </div>
-                    {message.role === "user" && (
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
-                        <User className="h-4 w-4" />
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
                 {isTyping && <TypingIndicator />}
               </div>
             </ScrollArea>
@@ -564,7 +747,7 @@ export function AIChatbot() {
                       key={reply.label}
                       variant="outline"
                       size="sm"
-                      onClick={() => handleQuickReply(reply.message)}
+                      onClick={() => handleQuickReply(reply.message, reply.topic)}
                       className="text-xs h-8"
                     >
                       <reply.icon className="h-3 w-3 mr-1" />
