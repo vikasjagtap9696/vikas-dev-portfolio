@@ -41,15 +41,16 @@ const handler = async (req: Request): Promise<Response> => {
       console.log("Submission saved to database");
     }
 
-    // Get notification email from settings
+    // Get notification settings
     const { data: settings } = await supabase
       .from("notification_settings")
-      .select("notification_email")
+      .select("notification_email, send_confirmation_email")
       .limit(1)
       .single();
 
     const notificationEmail = settings?.notification_email || "vikasjagtap.9696@gmail.com";
-    console.log("Sending notification to:", notificationEmail);
+    const sendConfirmationEmail = settings?.send_confirmation_email ?? true;
+    console.log("Sending notification to:", notificationEmail, "Send confirmation:", sendConfirmationEmail);
 
     // Send notification email
     const notificationResponse = await fetch("https://api.resend.com/emails", {
@@ -83,32 +84,36 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error(notificationData.message || "Failed to send notification email");
     }
 
-    // Send confirmation email to the sender
-    const confirmationResponse = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: "Vikas Jagtap <onboarding@resend.dev>",
-        to: [email],
-        subject: "Thanks for reaching out!",
-        html: `
-          <h2>Thank you for contacting me, ${name}!</h2>
-          <p>I've received your message and will get back to you as soon as possible.</p>
-          <hr />
-          <p><strong>Your message:</strong></p>
-          <p><em>${subject}</em></p>
-          <p>${message.replace(/\n/g, '<br>')}</p>
-          <hr />
-          <p>Best regards,<br>Vikas Jagtap</p>
-        `,
-      }),
-    });
+    // Send confirmation email to the sender (if enabled)
+    if (sendConfirmationEmail) {
+      const confirmationResponse = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+        },
+        body: JSON.stringify({
+          from: "Vikas Jagtap <onboarding@resend.dev>",
+          to: [email],
+          subject: "Thanks for reaching out!",
+          html: `
+            <h2>Thank you for contacting me, ${name}!</h2>
+            <p>I've received your message and will get back to you as soon as possible.</p>
+            <hr />
+            <p><strong>Your message:</strong></p>
+            <p><em>${subject}</em></p>
+            <p>${message.replace(/\n/g, '<br>')}</p>
+            <hr />
+            <p>Best regards,<br>Vikas Jagtap</p>
+          `,
+        }),
+      });
 
-    const confirmationData = await confirmationResponse.json();
-    console.log("Confirmation email sent:", confirmationData);
+      const confirmationData = await confirmationResponse.json();
+      console.log("Confirmation email sent:", confirmationData);
+    } else {
+      console.log("Confirmation email skipped (disabled in settings)");
+    }
 
     return new Response(
       JSON.stringify({ success: true, message: "Emails sent successfully" }),

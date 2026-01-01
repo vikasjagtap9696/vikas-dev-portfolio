@@ -3,6 +3,7 @@ import { Settings, Mail, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -15,17 +16,19 @@ import { useNotificationSettings } from "@/hooks/useNotificationSettings";
 export function NotificationSettingsDialog() {
   const { settings, isLoading, updateSettings } = useNotificationSettings();
   const [email, setEmail] = useState("");
+  const [sendConfirmation, setSendConfirmation] = useState(true);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (settings?.notification_email) {
-      setEmail(settings.notification_email);
+    if (settings) {
+      setEmail(settings.notification_email || "");
+      setSendConfirmation(settings.send_confirmation_email ?? true);
     }
   }, [settings]);
 
   const handleSave = () => {
     if (email.trim()) {
-      updateSettings.mutate(email.trim());
+      updateSettings.mutate({ email: email.trim(), sendConfirmation });
     }
   };
 
@@ -46,7 +49,7 @@ export function NotificationSettingsDialog() {
             <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="notification-email" className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />
@@ -63,6 +66,20 @@ export function NotificationSettingsDialog() {
               <p className="text-xs text-muted-foreground">
                 Contact form submissions will be sent to this email address.
               </p>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="send-confirmation">Send Confirmation Emails</Label>
+                <p className="text-xs text-muted-foreground">
+                  Automatically send a confirmation email to visitors after they submit the contact form.
+                </p>
+              </div>
+              <Switch
+                id="send-confirmation"
+                checked={sendConfirmation}
+                onCheckedChange={setSendConfirmation}
+              />
             </div>
 
             <Button
