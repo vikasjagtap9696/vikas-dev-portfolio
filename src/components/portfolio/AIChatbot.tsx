@@ -3,8 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen, RotateCcw, Volume2, VolumeX } from "lucide-react";
+import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen, RotateCcw, Volume2, VolumeX, Download } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type Message = {
   role: "user" | "assistant";
@@ -120,6 +126,39 @@ export function AIChatbot() {
   const toggleSound = useCallback(() => {
     setSoundEnabled(prev => !prev);
   }, []);
+
+  const exportChat = useCallback((format: "text" | "json") => {
+    const timestamp = new Date().toISOString().split("T")[0];
+    let content: string;
+    let filename: string;
+    let mimeType: string;
+
+    if (format === "json") {
+      content = JSON.stringify({
+        exportedAt: new Date().toISOString(),
+        messages: messages,
+      }, null, 2);
+      filename = `vikas-ai-chat-${timestamp}.json`;
+      mimeType = "application/json";
+    } else {
+      content = messages
+        .map((m) => `${m.role === "user" ? "You" : "Vikas AI"}: ${m.content}`)
+        .join("\n\n---\n\n");
+      content = `Chat with Vikas AI Assistant\nExported: ${new Date().toLocaleString()}\n\n${"=".repeat(50)}\n\n${content}`;
+      filename = `vikas-ai-chat-${timestamp}.txt`;
+      mimeType = "text/plain";
+    }
+
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [messages]);
 
   const sendMessage = async (messageText?: string) => {
     const text = messageText || input.trim();
@@ -261,15 +300,37 @@ export function AIChatbot() {
                 {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
               </Button>
               {messages.length > 1 && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={clearChat}
-                  className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
-                  title="Clear chat"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                </Button>
+                <>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
+                        title="Export chat"
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => exportChat("text")}>
+                        Export as Text
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => exportChat("json")}>
+                        Export as JSON
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={clearChat}
+                    className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
+                    title="Clear chat"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                  </Button>
+                </>
               )}
               <Button
                 variant="ghost"
