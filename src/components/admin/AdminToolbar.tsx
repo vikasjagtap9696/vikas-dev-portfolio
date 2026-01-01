@@ -5,6 +5,7 @@ import { useState } from "react";
 import { InviteAdminDialog } from "./InviteAdminDialog";
 import { ContactSubmissionsDialog } from "./ContactSubmissionsDialog";
 import { NotificationSettingsDialog } from "./NotificationSettingsDialog";
+import { ProfilePhotoDialog } from "./ProfilePhotoDialog";
 
 export function AdminToolbar() {
   const { isAdmin, signOut, user } = useAuth();
@@ -23,6 +24,7 @@ export function AdminToolbar() {
           <div className="h-4 w-px bg-border" />
           <ContactSubmissionsDialog />
           <NotificationSettingsDialog />
+          <ProfilePhotoDialog />
           <Button
             variant="ghost"
             size="sm"
