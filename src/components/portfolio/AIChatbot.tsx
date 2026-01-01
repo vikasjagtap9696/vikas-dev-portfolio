@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen, RotateCcw, Volume2, VolumeX, Download } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -85,6 +87,7 @@ export function AIChatbot() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [soundEnabled, setSoundEnabled] = useState(() => {
     try {
       return localStorage.getItem("vikas-ai-sound") !== "false";
@@ -93,6 +96,13 @@ export function AIChatbot() {
     }
   });
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  // Clear unread count when chat opens
+  useEffect(() => {
+    if (isOpen) {
+      setUnreadCount(0);
+    }
+  }, [isOpen]);
 
   // Save messages to localStorage whenever they change
   useEffect(() => {
@@ -250,9 +260,12 @@ export function AIChatbot() {
         }
       }
 
-      // Play notification sound when response is complete
+      // Play notification sound and increment unread count when response is complete
       if (soundEnabled) {
         playNotificationSound();
+      }
+      if (!isOpen) {
+        setUnreadCount((prev) => prev + 1);
       }
     } catch (error) {
       console.error("Chat error:", error);
@@ -298,6 +311,11 @@ export function AIChatbot() {
         size="icon"
       >
         <MessageCircle className="h-6 w-6" />
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center animate-scale-in">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
       </Button>
 
       {/* Chat Window */}
@@ -391,15 +409,34 @@ export function AIChatbot() {
                             ol: ({ children }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
                             li: ({ children }) => <li className="mb-1">{children}</li>,
                             strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                            code: ({ children, className }) => {
+                            code: ({ children, className, ...props }) => {
+                              const match = /language-(\w+)/.exec(className || "");
                               const isInline = !className;
-                              return isInline ? (
-                                <code className="bg-background/50 px-1 py-0.5 rounded text-xs font-mono">{children}</code>
-                              ) : (
-                                <code className="block bg-background/50 p-2 rounded text-xs font-mono overflow-x-auto my-2">{children}</code>
+                              
+                              if (isInline) {
+                                return (
+                                  <code className="bg-background/50 px-1 py-0.5 rounded text-xs font-mono">
+                                    {children}
+                                  </code>
+                                );
+                              }
+                              
+                              return (
+                                <SyntaxHighlighter
+                                  style={oneDark}
+                                  language={match ? match[1] : "text"}
+                                  PreTag="div"
+                                  customStyle={{
+                                    margin: "0.5rem 0",
+                                    borderRadius: "0.375rem",
+                                    fontSize: "0.75rem",
+                                  }}
+                                >
+                                  {String(children).replace(/\n$/, "")}
+                                </SyntaxHighlighter>
                               );
                             },
-                            pre: ({ children }) => <pre className="bg-background/50 p-2 rounded overflow-x-auto my-2">{children}</pre>,
+                            pre: ({ children }) => <>{children}</>,
                             a: ({ href, children }) => (
                               <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:no-underline">
                                 {children}
