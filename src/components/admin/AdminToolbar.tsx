@@ -7,7 +7,9 @@ import {
   FileText, 
   Image, 
   Settings,
-  ChevronDown
+  ChevronDown,
+  Mail,
+  Upload
 } from "lucide-react";
 import { useState } from "react";
 import {
@@ -17,6 +19,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
 import { InviteAdminDialog } from "./InviteAdminDialog";
 import { ContactSubmissionsDialog } from "./ContactSubmissionsDialog";
@@ -33,6 +39,8 @@ import { FooterDialog } from "./FooterDialog";
 import { ExperienceManageDialog } from "./ExperienceManageDialog";
 import { SkillsManageDialog } from "./SkillsManageDialog";
 import { ProjectsManageDialog } from "./ProjectsManageDialog";
+import { CertificatesManageDialog } from "./CertificatesManageDialog";
+import { ResumeUploadDialog } from "./ResumeUploadDialog";
 
 export function AdminToolbar() {
   const { isAdmin, signOut } = useAuth();
@@ -42,146 +50,158 @@ export function AdminToolbar() {
 
   return (
     <>
-      <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2">
-        <div className="glass px-4 py-2 rounded-full flex items-center gap-3 shadow-lg">
-          <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium">Admin Mode</span>
-          </div>
-          <div className="h-4 w-px bg-border" />
-          
-          {/* Contact Submissions - standalone as frequently used */}
-          <ContactSubmissionsDialog />
-          
-          {/* Content Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1">
-                <FileText className="h-4 w-4" />
+      <div className="fixed bottom-6 right-6 z-50">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="gap-2 shadow-lg rounded-full px-6" size="lg">
+              <Shield className="h-4 w-4" />
+              Admin Mode
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" side="top" className="w-56 bg-background border shadow-xl z-[60]">
+            {/* Contact Submissions */}
+            <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+              <div className="w-full">
+                <ContactSubmissionsDialog />
+              </div>
+            </DropdownMenuItem>
+            
+            <DropdownMenuSeparator />
+            
+            {/* Content Sub-menu */}
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <FileText className="h-4 w-4 mr-2" />
                 Content
-                <ChevronDown className="h-3 w-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 bg-background border shadow-lg z-50">
-              <DropdownMenuLabel>Hero Section</DropdownMenuLabel>
-              <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                <div className="w-full">
-                  <HeroTextDialog />
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                <div className="w-full">
-                  <HeroStatsDialog />
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>About Section</DropdownMenuLabel>
-              <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                <div className="w-full">
-                  <AboutTextDialog />
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                <div className="w-full">
-                  <CareerGoalsDialog />
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>Skills</DropdownMenuLabel>
-              <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                <div className="w-full">
-                  <SkillsManageDialog />
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>Projects</DropdownMenuLabel>
-              <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                <div className="w-full">
-                  <ProjectsManageDialog />
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>Experience</DropdownMenuLabel>
-              <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                <div className="w-full">
-                  <ExperienceManageDialog />
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>Footer</DropdownMenuLabel>
-              <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                <div className="w-full">
-                  <FooterDialog />
-                </div>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent className="w-48 bg-background border shadow-xl z-[60]">
+                  <DropdownMenuLabel>Hero Section</DropdownMenuLabel>
+                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                    <div className="w-full">
+                      <HeroTextDialog />
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                    <div className="w-full">
+                      <HeroStatsDialog />
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>About Section</DropdownMenuLabel>
+                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                    <div className="w-full">
+                      <AboutTextDialog />
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                    <div className="w-full">
+                      <CareerGoalsDialog />
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Manage Sections</DropdownMenuLabel>
+                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                    <div className="w-full">
+                      <SkillsManageDialog />
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                    <div className="w-full">
+                      <ProjectsManageDialog />
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                    <div className="w-full">
+                      <ExperienceManageDialog />
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                    <div className="w-full">
+                      <CertificatesManageDialog />
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Footer</DropdownMenuLabel>
+                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                    <div className="w-full">
+                      <FooterDialog />
+                    </div>
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
 
-          {/* Media Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1">
-                <Image className="h-4 w-4" />
+            {/* Media Sub-menu */}
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <Image className="h-4 w-4 mr-2" />
                 Media
-                <ChevronDown className="h-3 w-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 bg-background border shadow-lg z-50">
-              <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                <div className="w-full">
-                  <ProfilePhotoDialog />
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                <div className="w-full">
-                  <HeroBackgroundDialog />
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                <div className="w-full">
-                  <AboutImageDialog />
-                </div>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent className="w-48 bg-background border shadow-xl z-[60]">
+                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                    <div className="w-full">
+                      <ProfilePhotoDialog />
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                    <div className="w-full">
+                      <HeroBackgroundDialog />
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                    <div className="w-full">
+                      <AboutImageDialog />
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                    <div className="w-full flex items-center gap-2 px-2 py-1.5 text-sm">
+                      <Upload className="h-4 w-4" />
+                      <ResumeUploadDialog />
+                    </div>
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
 
-          {/* Settings Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1">
-                <Settings className="h-4 w-4" />
+            {/* Settings Sub-menu */}
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <Settings className="h-4 w-4 mr-2" />
                 Settings
-                <ChevronDown className="h-3 w-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 bg-background border shadow-lg z-50">
-              <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                <div className="w-full">
-                  <SocialLinksDialog />
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                <div className="w-full">
-                  <NotificationSettingsDialog />
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setShowInvite(true)}>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Invite Admin
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent className="w-48 bg-background border shadow-xl z-[60]">
+                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                    <div className="w-full">
+                      <SocialLinksDialog />
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                    <div className="w-full">
+                      <NotificationSettingsDialog />
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setShowInvite(true)}>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Invite Admin
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={signOut}
-            className="h-8 px-2 text-destructive hover:text-destructive"
-          >
-            <LogOut className="h-4 w-4" />
-          </Button>
-        </div>
+            <DropdownMenuSeparator />
+            
+            <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
+              <LogOut className="h-4 w-4 mr-2" />
+              Log Out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <InviteAdminDialog open={showInvite} onOpenChange={setShowInvite} />

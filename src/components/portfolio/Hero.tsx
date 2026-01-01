@@ -1,10 +1,13 @@
-import { ArrowDown, Github, Linkedin, Mail, Twitter, Download } from "lucide-react";
+import { ArrowDown, Github, Linkedin, Mail, Twitter, Download, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfileSettings } from "@/hooks/useProfileSettings";
+import { useAuth } from "@/contexts/AuthContext";
+import { ProfilePhotoDialog } from "@/components/admin/ProfilePhotoDialog";
 
 export function Hero() {
   const { data: profileSettings } = useProfileSettings();
+  const { isAdmin } = useAuth();
 
   const handleScroll = (href: string) => {
     const element = document.querySelector(href);
@@ -139,12 +142,26 @@ export function Hero() {
           </div>
 
           {/* Right Content - Avatar & Stats */}
-          <div className="flex-1 flex flex-col items-center lg:items-end gap-8 animate-fade-in" style={{ animationDelay: "0.7s" }}>
-            {/* Profile Photo */}
-            <Avatar className="h-48 w-48 md:h-64 md:w-64 border-4 border-primary/20 shadow-xl">
-              <AvatarImage src={profileSettings?.avatar_url || ""} alt="Vikas Prakash Jagtap" />
-              <AvatarFallback className="text-4xl md:text-5xl bg-primary/10 text-primary">VP</AvatarFallback>
-            </Avatar>
+          <div className="flex-1 flex flex-col items-center gap-8 animate-fade-in" style={{ animationDelay: "0.7s" }}>
+            {/* Profile Photo with Edit Option */}
+            <div className="relative group">
+              <Avatar className="h-48 w-48 md:h-64 md:w-64 border-4 border-primary/20 shadow-xl">
+                <AvatarImage src={profileSettings?.avatar_url || ""} alt="Vikas Prakash Jagtap" className="object-cover" />
+                <AvatarFallback className="text-4xl md:text-5xl bg-primary/10 text-primary">VP</AvatarFallback>
+              </Avatar>
+              {isAdmin && (
+                <div className="absolute inset-0 flex items-center justify-center bg-background/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                  <ProfilePhotoDialog 
+                    trigger={
+                      <Button size="sm" variant="secondary" className="gap-2">
+                        <Camera className="h-4 w-4" />
+                        Change Photo
+                      </Button>
+                    }
+                  />
+                </div>
+              )}
+            </div>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 gap-6">
