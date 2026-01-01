@@ -1,7 +1,11 @@
 import { ArrowDown, Github, Linkedin, Mail, Twitter, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useProfileSettings } from "@/hooks/useProfileSettings";
 
 export function Hero() {
+  const { data: profileSettings } = useProfileSettings();
+
   const handleScroll = (href: string) => {
     const element = document.querySelector(href);
     element?.scrollIntoView({ behavior: "smooth" });
@@ -109,8 +113,15 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Right Content - Stats */}
-          <div className="flex-1 flex justify-center lg:justify-end animate-fade-in" style={{ animationDelay: "0.7s" }}>
+          {/* Right Content - Avatar & Stats */}
+          <div className="flex-1 flex flex-col items-center lg:items-end gap-8 animate-fade-in" style={{ animationDelay: "0.7s" }}>
+            {/* Profile Photo */}
+            <Avatar className="h-48 w-48 md:h-64 md:w-64 border-4 border-primary/20 shadow-xl">
+              <AvatarImage src={profileSettings?.avatar_url || ""} alt="Vikas Prakash Jagtap" />
+              <AvatarFallback className="text-4xl md:text-5xl bg-primary/10 text-primary">VP</AvatarFallback>
+            </Avatar>
+
+            {/* Stats Grid */}
             <div className="grid grid-cols-2 gap-6">
               <div className="glass p-6 rounded-xl text-center hover-glow transition-all duration-300">
                 <div className="text-4xl font-bold gradient-text mb-2">3+</div>
