@@ -4,6 +4,7 @@ import { LogOut, Shield, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { InviteAdminDialog } from "./InviteAdminDialog";
 import { ContactSubmissionsDialog } from "./ContactSubmissionsDialog";
+import { NotificationSettingsDialog } from "./NotificationSettingsDialog";
 
 export function AdminToolbar() {
   const { isAdmin, signOut, user } = useAuth();
@@ -21,6 +22,7 @@ export function AdminToolbar() {
           </div>
           <div className="h-4 w-px bg-border" />
           <ContactSubmissionsDialog />
+          <NotificationSettingsDialog />
           <Button
             variant="ghost"
             size="sm"

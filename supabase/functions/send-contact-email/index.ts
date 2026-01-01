@@ -41,7 +41,17 @@ const handler = async (req: Request): Promise<Response> => {
       console.log("Submission saved to database");
     }
 
-    // Send notification email to you
+    // Get notification email from settings
+    const { data: settings } = await supabase
+      .from("notification_settings")
+      .select("notification_email")
+      .limit(1)
+      .single();
+
+    const notificationEmail = settings?.notification_email || "vikasjagtap.9696@gmail.com";
+    console.log("Sending notification to:", notificationEmail);
+
+    // Send notification email
     const notificationResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -50,7 +60,7 @@ const handler = async (req: Request): Promise<Response> => {
       },
       body: JSON.stringify({
         from: "Portfolio Contact <onboarding@resend.dev>",
-        to: ["vikasjagtap.9696@gmail.com"],
+        to: [notificationEmail],
         subject: `New Contact: ${subject}`,
         html: `
           <h2>New Contact Form Submission</h2>
