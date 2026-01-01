@@ -1,36 +1,45 @@
 import { useState } from "react";
-import { Mail, Phone, MapPin, Send, Github, Linkedin, Twitter } from "lucide-react";
+import { Mail, Phone, MapPin, Send, Github, Linkedin, Twitter, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
 
 const contactInfo = [
   {
     icon: Mail,
     label: "Email",
-    value: "vikas.jagtap@example.com",
-    href: "mailto:vikas.jagtap@example.com",
+    value: "vikasjagtap.9696@gmail.com",
+    href: "mailto:vikasjagtap.9696@gmail.com",
   },
   {
     icon: Phone,
     label: "Phone",
-    value: "+91 98765 43210",
-    href: "tel:+919876543210",
+    value: "+91 9145317002",
+    href: "tel:+919145317002",
   },
   {
     icon: MapPin,
     label: "Location",
-    value: "Mumbai, India",
+    value: "Baramati, Maharashtra, India",
     href: null,
   },
 ];
 
 const socialLinks = [
-  { icon: Github, href: "https://github.com/vikasjagtap", label: "GitHub" },
-  { icon: Linkedin, href: "https://linkedin.com/in/vikasjagtap", label: "LinkedIn" },
-  { icon: Twitter, href: "https://twitter.com/vikasjagtap", label: "Twitter" },
+  { icon: Github, href: "https://github.com/vikasjagtap9696", label: "GitHub" },
+  { icon: Linkedin, href: "https://www.linkedin.com/in/vikas-jagtap", label: "LinkedIn" },
+  { icon: Twitter, href: "https://twitter.com/yourusername", label: "Twitter" },
+  { icon: Globe, href: "https://vikasjagtap.dev", label: "Portfolio" },
 ];
+
+const contactSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
+  email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
+  subject: z.string().trim().min(1, "Subject is required").max(200, "Subject must be less than 200 characters"),
+  message: z.string().trim().min(1, "Message is required").max(2000, "Message must be less than 2000 characters"),
+});
 
 export function Contact() {
   const { toast } = useToast();
@@ -40,10 +49,25 @@ export function Contact() {
     subject: "",
     message: "",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
+
+    const result = contactSchema.safeParse(formData);
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          fieldErrors[err.path[0] as string] = err.message;
+        }
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
     setIsSubmitting(true);
 
     // Simulate form submission
@@ -61,10 +85,15 @@ export function Contact() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
     }));
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
   return (
@@ -150,9 +179,10 @@ export function Contact() {
                     placeholder="Your Name"
                     value={formData.name}
                     onChange={handleChange}
-                    required
-                    className="bg-secondary/50 border-border focus:border-primary"
+                    className={`bg-secondary/50 border-border focus:border-primary ${errors.name ? "border-destructive" : ""}`}
+                    maxLength={100}
                   />
+                  {errors.name && <p className="text-destructive text-xs mt-1">{errors.name}</p>}
                 </div>
                 <div>
                   <Input
@@ -161,9 +191,10 @@ export function Contact() {
                     placeholder="Your Email"
                     value={formData.email}
                     onChange={handleChange}
-                    required
-                    className="bg-secondary/50 border-border focus:border-primary"
+                    className={`bg-secondary/50 border-border focus:border-primary ${errors.email ? "border-destructive" : ""}`}
+                    maxLength={255}
                   />
+                  {errors.email && <p className="text-destructive text-xs mt-1">{errors.email}</p>}
                 </div>
               </div>
               <div>
@@ -172,9 +203,10 @@ export function Contact() {
                   placeholder="Subject"
                   value={formData.subject}
                   onChange={handleChange}
-                  required
-                  className="bg-secondary/50 border-border focus:border-primary"
+                  className={`bg-secondary/50 border-border focus:border-primary ${errors.subject ? "border-destructive" : ""}`}
+                  maxLength={200}
                 />
+                {errors.subject && <p className="text-destructive text-xs mt-1">{errors.subject}</p>}
               </div>
               <div>
                 <Textarea
@@ -182,10 +214,11 @@ export function Contact() {
                   placeholder="Your Message"
                   value={formData.message}
                   onChange={handleChange}
-                  required
                   rows={5}
-                  className="bg-secondary/50 border-border focus:border-primary resize-none"
+                  className={`bg-secondary/50 border-border focus:border-primary resize-none ${errors.message ? "border-destructive" : ""}`}
+                  maxLength={2000}
                 />
+                {errors.message && <p className="text-destructive text-xs mt-1">{errors.message}</p>}
               </div>
               <Button
                 type="submit"

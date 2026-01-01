@@ -1,4 +1,4 @@
-import { Code, GraduationCap, Target, Briefcase } from "lucide-react";
+import { Code, GraduationCap, Target, Briefcase, Shield } from "lucide-react";
 
 export function About() {
   return (
@@ -22,10 +22,11 @@ export function About() {
                 Who I Am
               </h3>
               <p className="text-muted-foreground leading-relaxed">
-                I'm Vikas Jagtap, a Full Stack Web Developer with expertise in building 
-                modern, responsive, and scalable web applications. I specialize in React, 
-                Node.js, and cloud technologies, with a strong focus on clean code and 
-                best practices.
+                I am Vikas Prakash Jagtap, a passionate Full Stack Web Developer and Computer Science 
+                graduate with strong problem-solving skills and hands-on experience in building scalable 
+                web applications. I enjoy working with modern technologies like React, Node.js, Java, SQL, 
+                and PostgreSQL. My goal is to become an industry-ready all-round developer and contribute 
+                to impactful software solutions.
               </p>
             </div>
 
@@ -37,11 +38,11 @@ export function About() {
               <div className="space-y-3">
                 <div>
                   <p className="font-medium">Bachelor of Computer Science</p>
-                  <p className="text-muted-foreground text-sm">University of Technology • 2018-2022</p>
+                  <p className="text-muted-foreground text-sm">Baramati, Maharashtra • Graduate</p>
                 </div>
                 <div>
-                  <p className="font-medium">Full Stack Development Certification</p>
-                  <p className="text-muted-foreground text-sm">Tech Institute • 2022</p>
+                  <p className="font-medium">Full Stack Development</p>
+                  <p className="text-muted-foreground text-sm">Self-taught & Continuous Learning</p>
                 </div>
               </div>
             </div>
@@ -57,11 +58,7 @@ export function About() {
               <ul className="space-y-2 text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">▹</span>
-                  Lead innovative web development projects at scale
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary mt-1">▹</span>
-                  Contribute to open-source communities
+                  Become an industry-ready all-round developer
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">▹</span>
@@ -69,7 +66,11 @@ export function About() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">▹</span>
-                  Mentor aspiring developers
+                  Contribute to impactful software solutions
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">▹</span>
+                  Continuously improve through real-world projects
                 </li>
               </ul>
             </div>
@@ -82,19 +83,22 @@ export function About() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-4 rounded-lg bg-secondary/50">
                   <p className="font-medium text-sm">Frontend</p>
-                  <p className="text-muted-foreground text-xs">React, Next.js, Vue</p>
+                  <p className="text-muted-foreground text-xs">React, Next.js, TypeScript</p>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-secondary/50">
                   <p className="font-medium text-sm">Backend</p>
-                  <p className="text-muted-foreground text-xs">Node.js, Express, Python</p>
+                  <p className="text-muted-foreground text-xs">Node.js, Java, Express</p>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-secondary/50">
                   <p className="font-medium text-sm">Database</p>
-                  <p className="text-muted-foreground text-xs">MongoDB, PostgreSQL</p>
+                  <p className="text-muted-foreground text-xs">SQL, PostgreSQL, MongoDB</p>
                 </div>
-                <div className="text-center p-4 rounded-lg bg-secondary/50">
-                  <p className="font-medium text-sm">Cloud</p>
-                  <p className="text-muted-foreground text-xs">AWS, Docker, CI/CD</p>
+                <div className="text-center p-4 rounded-lg bg-secondary/50 flex items-center justify-center gap-2">
+                  <Shield className="h-4 w-4 text-primary" />
+                  <div>
+                    <p className="font-medium text-sm">Security</p>
+                    <p className="text-muted-foreground text-xs">Cybersecurity</p>
+                  </div>
                 </div>
               </div>
             </div>
