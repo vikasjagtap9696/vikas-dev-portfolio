@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen } from "lucide-react";
+import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen, RotateCcw } from "lucide-react";
 
 type Message = {
   role: "user" | "assistant";
@@ -19,23 +19,42 @@ const quickReplies = [
   { label: "Contact", icon: Mail, message: "How can I contact Vikas for a project?" },
 ];
 
+const initialMessage: Message = {
+  role: "assistant",
+  content: "Hi! I'm Vikas AI Assistant. I can help you understand what kind of project you need, suggest the right technologies, and connect you with Vikas for your development needs. How can I help you today?",
+};
+
+const TypingIndicator = () => (
+  <div className="flex gap-3 justify-start">
+    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+      <Bot className="h-4 w-4" />
+    </div>
+    <div className="bg-muted rounded-lg px-4 py-3 flex items-center gap-1">
+      <span className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+      <span className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+      <span className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+    </div>
+  </div>
+);
+
 export function AIChatbot() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: "Hi! I'm Vikas AI Assistant. I can help you understand what kind of project you need, suggest the right technologies, and connect you with Vikas for your development needs. How can I help you today?",
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([initialMessage]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, isTyping]);
+
+  const clearChat = () => {
+    setMessages([initialMessage]);
+    setInput("");
+  };
 
   const sendMessage = async (messageText?: string) => {
     const text = messageText || input.trim();
@@ -45,6 +64,7 @@ export function AIChatbot() {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
+    setIsTyping(true);
 
     let assistantContent = "";
 
@@ -71,6 +91,7 @@ export function AIChatbot() {
       const decoder = new TextDecoder();
       let textBuffer = "";
 
+      setIsTyping(false);
       setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
       while (true) {
@@ -113,6 +134,7 @@ export function AIChatbot() {
       }
     } catch (error) {
       console.error("Chat error:", error);
+      setIsTyping(false);
       setMessages((prev) => [
         ...prev,
         {
@@ -122,6 +144,7 @@ export function AIChatbot() {
       ]);
     } finally {
       setIsLoading(false);
+      setIsTyping(false);
     }
   };
 
@@ -151,20 +174,33 @@ export function AIChatbot() {
 
       {/* Chat Window */}
       {isOpen && (
-        <Card className="fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-48px)] shadow-2xl border-2">
+        <Card className="fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-48px)] shadow-2xl border-2 animate-scale-in">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 bg-primary text-primary-foreground rounded-t-lg">
             <div className="flex items-center gap-2">
               <Bot className="h-5 w-5" />
               <CardTitle className="text-lg font-semibold">Vikas AI Assistant</CardTitle>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsOpen(false)}
-              className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              {messages.length > 1 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={clearChat}
+                  className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
+                  title="Clear chat"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsOpen(false)}
+                className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             <ScrollArea className="h-[400px] p-4" ref={scrollAreaRef}>
@@ -172,7 +208,7 @@ export function AIChatbot() {
                 {messages.map((message, index) => (
                   <div
                     key={index}
-                    className={`flex gap-3 ${
+                    className={`flex gap-3 animate-fade-in ${
                       message.role === "user" ? "justify-end" : "justify-start"
                     }`}
                   >
@@ -188,9 +224,7 @@ export function AIChatbot() {
                           : "bg-muted"
                       }`}
                     >
-                      {message.content || (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      )}
+                      {message.content}
                     </div>
                     {message.role === "user" && (
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
@@ -199,6 +233,7 @@ export function AIChatbot() {
                     )}
                   </div>
                 ))}
+                {isTyping && <TypingIndicator />}
               </div>
             </ScrollArea>
             
