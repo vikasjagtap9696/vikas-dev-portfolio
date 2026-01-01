@@ -1,11 +1,12 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
-import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen, RotateCcw, Volume2, VolumeX, Download, Mic, MicOff, Copy, Check, PlayCircle, StopCircle, Tag, ChevronDown, ChevronUp, Sun, Moon, Gauge, ThumbsUp, ThumbsDown, Search } from "lucide-react";
+import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen, RotateCcw, Volume2, VolumeX, Download, Mic, MicOff, Copy, Check, PlayCircle, StopCircle, Tag, ChevronDown, ChevronUp, Sun, Moon, Gauge, ThumbsUp, ThumbsDown, Search, Clock, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "next-themes";
 import ReactMarkdown from "react-markdown";
@@ -32,6 +33,48 @@ type Message = {
   content: string;
   topic?: Topic;
   reaction?: Reaction;
+  timestamp?: number;
+};
+
+// Follow-up suggestions based on conversation context
+const getFollowUpSuggestions = (lastUserMessage: string, lastAssistantMessage: string): string[] => {
+  const lowerUser = lastUserMessage.toLowerCase();
+  const lowerAssistant = lastAssistantMessage.toLowerCase();
+  
+  if (lowerUser.includes("project") || lowerAssistant.includes("project")) {
+    return [
+      "What technologies were used?",
+      "How long did it take to build?",
+      "Can I see a demo?",
+    ];
+  }
+  if (lowerUser.includes("service") || lowerAssistant.includes("service")) {
+    return [
+      "What's your typical timeline?",
+      "Do you offer maintenance?",
+      "What's your pricing?",
+    ];
+  }
+  if (lowerUser.includes("tech") || lowerAssistant.includes("technology") || lowerAssistant.includes("stack")) {
+    return [
+      "Which framework do you prefer?",
+      "Do you work with AI/ML?",
+      "What about mobile development?",
+    ];
+  }
+  if (lowerUser.includes("contact") || lowerAssistant.includes("contact")) {
+    return [
+      "What's the best way to reach you?",
+      "Are you available for freelance?",
+      "What's your response time?",
+    ];
+  }
+  // Default suggestions
+  return [
+    "Tell me about your experience",
+    "What makes you different?",
+    "Can we schedule a call?",
+  ];
 };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/portfolio-assistant`;
@@ -69,9 +112,15 @@ const quickReplies = [
   { label: "Contact", icon: Mail, message: "How can I contact Vikas for a project?", topic: "contact" as Topic },
 ];
 
-const initialMessage: Message = {
+const createInitialMessage = (): Message => ({
   role: "assistant",
   content: "Hi! I'm Vikas AI Assistant. I can help you understand what kind of project you need, suggest the right technologies, and connect you with Vikas for your development needs. How can I help you today?",
+  timestamp: Date.now(),
+});
+
+const formatTimestamp = (timestamp?: number): string => {
+  if (!timestamp) return "";
+  return format(new Date(timestamp), "h:mm a");
 };
 
 const TypingIndicator = () => (
@@ -159,12 +208,12 @@ export function AIChatbot() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        return parsed.length > 0 ? parsed : [initialMessage];
+        return parsed.length > 0 ? parsed : [createInitialMessage()];
       }
     } catch (error) {
       console.log("Could not load chat history:", error);
     }
-    return [initialMessage];
+    return [createInitialMessage()];
   });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -330,6 +379,22 @@ export function AIChatbot() {
     return true;
   });
 
+  // Get follow-up suggestions based on last conversation
+  const followUpSuggestions = useMemo(() => {
+    if (messages.length < 2 || isLoading) return [];
+    // Find last assistant and user messages (compatible with older JS targets)
+    let lastAssistantIdx = -1;
+    let lastUserIdx = -1;
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (lastAssistantIdx === -1 && messages[i].role === "assistant") lastAssistantIdx = i;
+      if (lastUserIdx === -1 && messages[i].role === "user") lastUserIdx = i;
+      if (lastAssistantIdx !== -1 && lastUserIdx !== -1) break;
+    }
+    if (lastAssistantIdx === -1 || lastUserIdx === -1) return [];
+    if (lastAssistantIdx !== messages.length - 1) return []; // Only show after assistant response
+    return getFollowUpSuggestions(messages[lastUserIdx].content, messages[lastAssistantIdx].content);
+  }, [messages, isLoading]);
+
   // Initialize speech recognition
   useEffect(() => {
     if (SpeechRecognition) {
@@ -433,7 +498,7 @@ export function AIChatbot() {
   }, [isOpen]);
 
   const clearChat = () => {
-    setMessages([initialMessage]);
+    setMessages([createInitialMessage()]);
     setInput("");
   };
 
@@ -479,7 +544,7 @@ export function AIChatbot() {
     if (!text || isLoading) return;
 
     const topic = messageTopic || detectTopic(text);
-    const userMessage: Message = { role: "user", content: text, topic };
+    const userMessage: Message = { role: "user", content: text, topic, timestamp: Date.now() };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
@@ -487,6 +552,7 @@ export function AIChatbot() {
     setTopicFilter("all"); // Reset filter when sending a new message
 
     let assistantContent = "";
+    const assistantTimestamp = Date.now();
 
     try {
       const response = await fetch(CHAT_URL, {
@@ -513,7 +579,7 @@ export function AIChatbot() {
       let displayedContent = "";
 
       setIsTyping(false);
-      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+      setMessages((prev) => [...prev, { role: "assistant", content: "", timestamp: assistantTimestamp }]);
 
       // Process the queue with typing effect
       const processQueue = async () => {
@@ -529,6 +595,7 @@ export function AIChatbot() {
               newMessages[newMessages.length - 1] = {
                 role: "assistant",
                 content: displayedContent,
+                timestamp: assistantTimestamp,
               };
               return newMessages;
             });
@@ -578,6 +645,7 @@ export function AIChatbot() {
                   newMessages[newMessages.length - 1] = {
                     role: "assistant",
                     content: assistantContent,
+                    timestamp: assistantTimestamp,
                   };
                   return newMessages;
                 });
@@ -852,12 +920,28 @@ export function AIChatbot() {
                         </div>
                       )}
                       <div className="flex flex-col gap-1 max-w-[80%]">
-                        {message.role === "user" && message.topic && (
-                          <div className="flex justify-end">
-                            <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${topicLabels[message.topic].color}`}>
-                              {topicLabels[message.topic].label}
-                            </Badge>
+                        {/* Topic badge and timestamp for user messages */}
+                        {message.role === "user" && (
+                          <div className="flex items-center justify-end gap-2">
+                            {message.topic && (
+                              <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${topicLabels[message.topic].color}`}>
+                                {topicLabels[message.topic].label}
+                              </Badge>
+                            )}
+                            {message.timestamp && (
+                              <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                                <Clock className="h-2.5 w-2.5" />
+                                {formatTimestamp(message.timestamp)}
+                              </span>
+                            )}
                           </div>
+                        )}
+                        {/* Timestamp for assistant messages */}
+                        {message.role === "assistant" && message.timestamp && originalIndex > 0 && (
+                          <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                            <Clock className="h-2.5 w-2.5" />
+                            {formatTimestamp(message.timestamp)}
+                          </span>
                         )}
                         <div
                           className={`rounded-lg px-4 py-2 text-sm ${
@@ -960,6 +1044,29 @@ export function AIChatbot() {
                 {isTyping && <TypingIndicator />}
               </div>
             </ScrollArea>
+            
+            {/* Follow-up Suggestions */}
+            {followUpSuggestions.length > 0 && messages.length > 2 && !isLoading && (
+              <div className="border-t px-4 py-3">
+                <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+                  <Sparkles className="h-3 w-3" />
+                  Suggested follow-ups:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {followUpSuggestions.map((suggestion, idx) => (
+                    <Button
+                      key={idx}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => sendMessage(suggestion)}
+                      className="text-xs h-7"
+                    >
+                      {suggestion}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
             
             {/* Quick Reply Buttons */}
             {messages.length <= 2 && !isLoading && (
