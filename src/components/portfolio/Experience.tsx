@@ -1,47 +1,35 @@
-import { Building2, Calendar, MapPin } from "lucide-react";
+import { Building2, Calendar, MapPin, GraduationCap } from "lucide-react";
 
 const experiences = [
   {
-    title: "Senior Full Stack Developer",
-    company: "Tech Solutions Inc.",
-    location: "Mumbai, India",
-    period: "Jan 2023 - Present",
+    title: "Web Developer Intern",
+    company: "Divine Technologies",
+    location: "Baramati, Maharashtra",
+    period: "3 Months Internship",
     description: [
-      "Lead development of microservices architecture serving 100k+ users",
-      "Implemented CI/CD pipelines reducing deployment time by 60%",
-      "Mentored junior developers and conducted code reviews",
-      "Integrated third-party APIs including payment gateways and analytics",
+      "Developed responsive web pages and user interfaces",
+      "Worked with frontend technologies including HTML, CSS, and JavaScript",
+      "Gained hands-on experience in real-world web development projects",
+      "Collaborated with team members on project deliverables",
     ],
-    technologies: ["React", "Node.js", "AWS", "Docker", "PostgreSQL"],
-    current: true,
+    technologies: ["HTML", "CSS", "JavaScript", "React"],
+    current: false,
+    type: "internship",
   },
   {
-    title: "Full Stack Developer",
-    company: "Digital Agency Co.",
-    location: "Pune, India",
-    period: "Jun 2021 - Dec 2022",
+    title: "BSc Computer Science",
+    company: "College/University",
+    location: "Baramati, Maharashtra",
+    period: "Graduate",
     description: [
-      "Developed 15+ client websites and web applications",
-      "Built RESTful APIs and integrated with frontend applications",
-      "Improved site performance scores by 40% through optimization",
-      "Collaborated with design team to implement pixel-perfect UIs",
+      "Completed Bachelor's degree in Computer Science",
+      "Studied core subjects: Java, DBMS, Data Structures, Algorithms",
+      "Developed multiple academic projects using various technologies",
+      "Built strong foundation in programming and problem-solving",
     ],
-    technologies: ["React", "Express", "MongoDB", "TailwindCSS"],
+    technologies: ["Java", "SQL", "Python", "C++"],
     current: false,
-  },
-  {
-    title: "Junior Web Developer",
-    company: "StartUp Hub",
-    location: "Bangalore, India",
-    period: "Jan 2020 - May 2021",
-    description: [
-      "Built and maintained responsive web applications",
-      "Participated in agile development processes",
-      "Fixed bugs and implemented new features based on user feedback",
-      "Learned best practices for clean and maintainable code",
-    ],
-    technologies: ["JavaScript", "React", "CSS", "Firebase"],
-    current: false,
+    type: "education",
   },
 ];
 
@@ -57,7 +45,7 @@ export function Experience() {
             Work <span className="gradient-text">Experience</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            My professional journey in software development
+            My professional journey and educational background
           </p>
         </div>
 
@@ -87,13 +75,22 @@ export function Experience() {
                       <div>
                         <h3 className="text-xl font-semibold text-foreground">{exp.title}</h3>
                         <div className="flex items-center gap-2 text-primary mt-1">
-                          <Building2 className="h-4 w-4" />
+                          {exp.type === "education" ? (
+                            <GraduationCap className="h-4 w-4" />
+                          ) : (
+                            <Building2 className="h-4 w-4" />
+                          )}
                           <span className="font-medium">{exp.company}</span>
                         </div>
                       </div>
-                      {exp.current && (
+                      {exp.type === "internship" && (
+                        <span className="px-3 py-1 rounded-full bg-accent/20 text-accent text-xs font-medium">
+                          Internship
+                        </span>
+                      )}
+                      {exp.type === "education" && (
                         <span className="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-medium">
-                          Current
+                          Education
                         </span>
                       )}
                     </div>
