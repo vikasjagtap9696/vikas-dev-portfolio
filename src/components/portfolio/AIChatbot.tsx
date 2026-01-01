@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle, X, Send, Bot, User, Loader2, Briefcase, Mail, Code, FolderOpen, RotateCcw, Volume2, VolumeX } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 type Message = {
   role: "user" | "assistant";
@@ -299,10 +300,38 @@ export function AIChatbot() {
                       className={`max-w-[80%] rounded-lg px-4 py-2 text-sm ${
                         message.role === "user"
                           ? "bg-primary text-primary-foreground"
-                          : "bg-muted"
+                          : "bg-muted prose prose-sm prose-neutral dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
                       }`}
                     >
-                      {message.content}
+                      {message.role === "assistant" ? (
+                        <ReactMarkdown
+                          components={{
+                            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                            ul: ({ children }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
+                            ol: ({ children }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
+                            li: ({ children }) => <li className="mb-1">{children}</li>,
+                            strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                            code: ({ children, className }) => {
+                              const isInline = !className;
+                              return isInline ? (
+                                <code className="bg-background/50 px-1 py-0.5 rounded text-xs font-mono">{children}</code>
+                              ) : (
+                                <code className="block bg-background/50 p-2 rounded text-xs font-mono overflow-x-auto my-2">{children}</code>
+                              );
+                            },
+                            pre: ({ children }) => <pre className="bg-background/50 p-2 rounded overflow-x-auto my-2">{children}</pre>,
+                            a: ({ href, children }) => (
+                              <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:no-underline">
+                                {children}
+                              </a>
+                            ),
+                          }}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                      ) : (
+                        message.content
+                      )}
                     </div>
                     {message.role === "user" && (
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
