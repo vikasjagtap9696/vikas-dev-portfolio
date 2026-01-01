@@ -118,6 +118,19 @@ export function AIChatbot() {
     }
   }, [messages, isTyping]);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Escape to close chat
+      if (e.key === "Escape" && isOpen) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
+
   const clearChat = () => {
     setMessages([initialMessage]);
     setInput("");
@@ -261,8 +274,14 @@ export function AIChatbot() {
     sendMessage(message);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Enter to send (without shift)
     if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+    // Ctrl+Enter or Cmd+Enter to send
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
       sendMessage();
     }
@@ -432,7 +451,7 @@ export function AIChatbot() {
                   placeholder="Ask me anything..."
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  onKeyDown={handleKeyDown}
                   disabled={isLoading}
                   className="flex-1"
                 />
