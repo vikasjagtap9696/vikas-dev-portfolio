@@ -9,6 +9,7 @@ interface ProfileSettings {
   linkedin_url: string | null;
   twitter_url: string | null;
   email: string | null;
+  about_image_url: string | null;
 }
 
 export function useProfileSettings() {
@@ -39,6 +40,7 @@ export function useUpdateProfileSettings() {
       linkedin_url?: string | null;
       twitter_url?: string | null;
       email?: string | null;
+      about_image_url?: string | null;
     }) => {
       const { id, ...fieldsToUpdate } = updates;
       const { error } = await supabase
@@ -77,6 +79,24 @@ export function useUploadAvatar() {
     mutationFn: async (file: File) => {
       const fileExt = file.name.split(".").pop();
       const fileName = `profile-avatar.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from("avatars").getPublicUrl(fileName);
+      return data.publicUrl;
+    },
+  });
+}
+
+export function useUploadAboutImage() {
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `about-image.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from("avatars")

@@ -1,6 +1,9 @@
 import { Code, GraduationCap, Target, Briefcase, Shield } from "lucide-react";
+import { useProfileSettings } from "@/hooks/useProfileSettings";
 
 export function About() {
+  const { data: profileSettings } = useProfileSettings();
+
   return (
     <section id="about" className="py-20 relative">
       <div className="container mx-auto px-4">
@@ -12,6 +15,20 @@ export function About() {
             A passionate developer committed to creating impactful digital solutions
           </p>
         </div>
+
+        {/* About Image */}
+        {profileSettings?.about_image_url && (
+          <div className="flex justify-center mb-12">
+            <div className="relative">
+              <img 
+                src={profileSettings.about_image_url} 
+                alt="About me" 
+                className="w-64 h-64 md:w-80 md:h-80 object-cover rounded-2xl shadow-xl border-4 border-primary/20"
+              />
+              <div className="absolute -inset-4 bg-primary/10 rounded-2xl -z-10 blur-xl" />
+            </div>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Profile Info */}
