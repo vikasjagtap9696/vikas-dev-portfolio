@@ -29,6 +29,7 @@ import { HeroTextDialog } from "./HeroTextDialog";
 import { AboutTextDialog } from "./AboutTextDialog";
 import { CareerGoalsDialog } from "./CareerGoalsDialog";
 import { HeroStatsDialog } from "./HeroStatsDialog";
+import { FooterDialog } from "./FooterDialog";
 
 export function AdminToolbar() {
   const { isAdmin, signOut } = useAuth();
@@ -80,6 +81,13 @@ export function AdminToolbar() {
               <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
                 <div className="w-full">
                   <CareerGoalsDialog />
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Footer</DropdownMenuLabel>
+              <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                <div className="w-full">
+                  <FooterDialog />
                 </div>
               </DropdownMenuItem>
             </DropdownMenuContent>
