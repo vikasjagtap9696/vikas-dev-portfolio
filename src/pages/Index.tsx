@@ -8,6 +8,7 @@ import { Certificates } from "@/components/portfolio/Certificates";
 import { Resume } from "@/components/portfolio/Resume";
 import { Contact } from "@/components/portfolio/Contact";
 import { Footer } from "@/components/portfolio/Footer";
+import { AdminToolbar } from "@/components/admin/AdminToolbar";
 
 const Index = () => {
   return (
@@ -22,6 +23,7 @@ const Index = () => {
       <Resume />
       <Contact />
       <Footer />
+      <AdminToolbar />
     </div>
   );
 };
