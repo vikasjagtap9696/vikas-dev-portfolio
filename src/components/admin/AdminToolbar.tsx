@@ -1,4 +1,4 @@
-import { useAuth } from "@/contexts/AuthContext";
+import { useNodeAuth } from "@/contexts/NodeAuthContext";
 import { Button } from "@/components/ui/button";
 import { 
   LogOut, 
@@ -43,7 +43,7 @@ import { CertificatesManageDialog } from "./CertificatesManageDialog";
 import { ResumeUploadDialog } from "./ResumeUploadDialog";
 
 export function AdminToolbar() {
-  const { isAdmin, signOut } = useAuth();
+  const { isAdmin, signOut } = useNodeAuth();
   const [showInvite, setShowInvite] = useState(false);
 
   if (!isAdmin) return null;

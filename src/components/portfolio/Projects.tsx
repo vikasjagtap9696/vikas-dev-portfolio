@@ -2,8 +2,8 @@ import { useState } from "react";
 import { ExternalLink, Github, Folder, Plus, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/contexts/AuthContext";
-import { useProjects, Project } from "@/hooks/useProjects";
+import { useNodeAuth } from "@/contexts/NodeAuthContext";
+import { useNodeProjects as useProjects, Project } from "@/hooks/useNodeBackend";
 import { ProjectDialog } from "@/components/admin/ProjectDialog";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 
@@ -45,7 +45,7 @@ const fallbackProjects = [
 ];
 
 export function Projects() {
-  const { isAdmin } = useAuth();
+  const { isAdmin } = useNodeAuth();
   const { projects: dbProjects, loading, addProject, updateProject, deleteProject } = useProjects();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);

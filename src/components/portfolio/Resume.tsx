@@ -1,12 +1,12 @@
 import { Download, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useResume } from "@/hooks/useResume";
-import { useAuth } from "@/contexts/AuthContext";
+import { useNodeAuth } from "@/contexts/NodeAuthContext";
 import { ResumeUploadDialog } from "@/components/admin/ResumeUploadDialog";
 
 export function Resume() {
   const { resumeSettings, isLoading } = useResume();
-  const { isAdmin } = useAuth();
+  const { isAdmin } = useNodeAuth();
 
   const handleDownload = () => {
     if (resumeSettings?.file_url) {
