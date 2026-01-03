@@ -2,12 +2,12 @@ import { ArrowDown, Github, Linkedin, Mail, Twitter, Download, Camera } from "lu
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfileSettings } from "@/hooks/useProfileSettings";
-import { useAuth } from "@/contexts/AuthContext";
+import { useNodeAuth } from "@/contexts/NodeAuthContext";
 import { ProfilePhotoDialog } from "@/components/admin/ProfilePhotoDialog";
 
 export function Hero() {
   const { data: profileSettings } = useProfileSettings();
-  const { isAdmin } = useAuth();
+  const { isAdmin } = useNodeAuth();
 
   const handleScroll = (href: string) => {
     const element = document.querySelector(href);

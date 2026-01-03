@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Building2, Calendar, MapPin, GraduationCap, Briefcase, Plus, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
-import { useExperiences, type Experience as ExperienceType } from "@/hooks/useExperiences";
+import { useNodeAuth } from "@/contexts/NodeAuthContext";
+import { useNodeExperiences as useExperiences, type Experience as ExperienceType } from "@/hooks/useNodeBackend";
 import { ExperienceDialog } from "@/components/admin/ExperienceDialog";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 
@@ -59,7 +59,7 @@ const typeLabels: Record<string, string> = {
 };
 
 export function Experience() {
-  const { isAdmin } = useAuth();
+  const { isAdmin } = useNodeAuth();
   const { experiences: dbExperiences, loading, addExperience, updateExperience, deleteExperience } = useExperiences();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
