@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const supabase = require('../config/supabase');
+const db = require('../config/database');
 const jwtConfig = require('../config/jwt');
 
-// Admin Login
+// Admin login
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -11,32 +11,41 @@ exports.login = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Email and password are required.'
+        message: 'Email and password are required'
       });
     }
 
-    // Authenticate with Supabase
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
+    // Find user by email
+    const [users] = await db.query(
+      'SELECT * FROM users WHERE email = ?',
+      [email]
+    );
 
-    if (authError) {
+    if (users.length === 0) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password.'
+        message: 'Invalid email or password'
+      });
+    }
+
+    const user = users[0];
+
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password'
       });
     }
 
     // Check if user has admin role
-    const { data: roleData, error: roleError } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', authData.user.id)
-      .eq('role', 'admin')
-      .maybeSingle();
+    const [roles] = await db.query(
+      'SELECT * FROM user_roles WHERE user_id = ? AND role = ?',
+      [user.id, 'admin']
+    );
 
-    if (roleError || !roleData) {
+    if (roles.length === 0) {
       return res.status(403).json({
         success: false,
         message: 'Access denied. Admin privileges required.'
@@ -45,74 +54,64 @@ exports.login = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      {
-        id: authData.user.id,
-        email: authData.user.email,
-        role: 'admin'
-      },
+      { id: user.id, email: user.email, role: 'admin' },
       jwtConfig.secret,
       { expiresIn: jwtConfig.expiresIn }
     );
 
     res.json({
       success: true,
-      message: 'Login successful.',
-      data: {
-        token,
-        user: {
-          id: authData.user.id,
-          email: authData.user.email,
-          role: 'admin'
-        }
+      message: 'Login successful',
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        avatar_url: user.avatar_url
       }
     });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      message: 'Login failed.',
-      error: error.message
+      message: 'Internal server error'
     });
   }
 };
 
-// Get current user profile
+// Get user profile
 exports.getProfile = async (req, res) => {
   try {
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', req.user.id)
-      .maybeSingle();
+    const [users] = await db.query(
+      'SELECT id, email, full_name, avatar_url, created_at FROM users WHERE id = ?',
+      [req.user.id]
+    );
 
-    if (error) {
-      throw error;
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
     }
 
     res.json({
       success: true,
-      data: {
-        ...profile,
-        role: req.user.role
-      }
+      data: users[0]
     });
   } catch (error) {
     console.error('Get profile error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to get profile.',
-      error: error.message
+      message: 'Internal server error'
     });
   }
 };
 
-// Verify token validity
+// Verify token
 exports.verifyToken = (req, res) => {
   res.json({
     success: true,
-    message: 'Token is valid.',
-    data: {
-      user: req.user
-    }
+    message: 'Token is valid',
+    user: req.user
   });
 };

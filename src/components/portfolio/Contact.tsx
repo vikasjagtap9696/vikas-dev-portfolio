@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import api from "@/lib/api";
 import { z } from "zod";
 
 const contactInfo = [
@@ -34,8 +34,6 @@ const socialLinks = [
   { icon: Twitter, href: "https://twitter.com/yourusername", label: "Twitter" },
   { icon: Globe, href: "https://vikasjagtap.dev", label: "Portfolio" },
 ];
-
-
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
@@ -74,11 +72,7 @@ export function Contact() {
     setIsSubmitting(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('send-contact-email', {
-        body: formData,
-      });
-
-      if (error) throw error;
+      await api.submitContact(formData);
 
       toast({
         title: "Message sent!",
@@ -86,11 +80,12 @@ export function Contact() {
       });
 
       setFormData({ name: "", email: "", subject: "", message: "" });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error sending message:", error);
+      const message = error instanceof Error ? error.message : "Please try again later.";
       toast({
         title: "Failed to send message",
-        description: error.message || "Please try again later.",
+        description: message,
         variant: "destructive",
       });
     } finally {

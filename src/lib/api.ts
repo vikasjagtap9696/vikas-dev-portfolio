@@ -180,6 +180,55 @@ class ApiClient {
   async deleteExperience(id: string) {
     return this.request(`/experiences/${id}`, { method: 'DELETE' });
   }
+
+  // Profile endpoints
+  async getProfile() {
+    const data = await this.request<{ success: boolean; data: unknown }>('/profile');
+    return data.data;
+  }
+
+  async updateProfile(updates: unknown) {
+    const data = await this.request<{ success: boolean; data: unknown }>('/profile', {
+      method: 'PUT',
+      body: updates,
+    });
+    return data.data;
+  }
+
+  // Contact endpoints
+  async submitContact(contactData: { name: string; email: string; subject: string; message: string }) {
+    return this.request<{ success: boolean; message: string }>('/contact', {
+      method: 'POST',
+      body: contactData,
+    });
+  }
+
+  async getContactSubmissions() {
+    const data = await this.request<{ success: boolean; data: unknown[] }>('/contact');
+    return data.data;
+  }
+
+  async markContactAsRead(id: string) {
+    return this.request(`/contact/${id}/read`, { method: 'PUT' });
+  }
+
+  async deleteContact(id: string) {
+    return this.request(`/contact/${id}`, { method: 'DELETE' });
+  }
+
+  // Resume endpoints
+  async getResume() {
+    const data = await this.request<{ success: boolean; data: unknown }>('/resume');
+    return data.data;
+  }
+
+  async updateResume(updates: { file_url: string; file_name: string }) {
+    const data = await this.request<{ success: boolean; data: unknown }>('/resume', {
+      method: 'PUT',
+      body: updates,
+    });
+    return data.data;
+  }
 }
 
 export const api = new ApiClient(API_BASE_URL);

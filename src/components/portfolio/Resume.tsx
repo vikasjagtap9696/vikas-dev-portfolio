@@ -1,8 +1,6 @@
 import { Download, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useResume } from "@/hooks/useResume";
-import { useNodeAuth } from "@/contexts/NodeAuthContext";
-import { ResumeUploadDialog } from "@/components/admin/ResumeUploadDialog";
+import { useNodeResume as useResume, useNodeAuth } from "@/hooks/useNodeBackend";
 
 export function Resume() {
   const { resumeSettings, isLoading } = useResume();
@@ -14,13 +12,6 @@ export function Resume() {
     }
   };
 
-  const lastUpdated = resumeSettings?.updated_at
-    ? new Date(resumeSettings.updated_at).toLocaleDateString("en-US", {
-        month: "long",
-        year: "numeric",
-      })
-    : null;
-
   return (
     <section className="py-20 relative overflow-hidden">
       {/* Background gradient */}
@@ -29,12 +20,6 @@ export function Resume() {
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-3xl mx-auto text-center">
           <div className="glass p-8 md:p-12 rounded-2xl hover-glow relative">
-            {isAdmin && (
-              <div className="absolute top-4 right-4">
-                <ResumeUploadDialog />
-              </div>
-            )}
-
             <div className="inline-flex p-4 rounded-full bg-primary/20 mb-6">
               <FileText className="h-10 w-10 text-primary" />
             </div>
@@ -60,10 +45,10 @@ export function Resume() {
               </Button>
             </div>
 
-            {lastUpdated && resumeSettings?.file_url && (
+            {resumeSettings?.file_url && resumeSettings?.file_name && (
               <div className="mt-8 pt-8 border-t border-border">
                 <p className="text-sm text-muted-foreground">
-                  Last updated: {lastUpdated} • {resumeSettings.file_name}
+                  {resumeSettings.file_name}
                 </p>
               </div>
             )}
