@@ -1,162 +1,152 @@
-const supabase = require('../config/supabase');
+const db = require('../config/database');
+const { v4: uuidv4 } = require('uuid');
 
-// Get all skills (Public)
+// Get all skills
 exports.getAll = async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from('skills')
-      .select('*')
-      .order('display_order', { ascending: true });
-
-    if (error) throw error;
+    const [rows] = await db.query(
+      'SELECT * FROM skills ORDER BY display_order ASC'
+    );
 
     res.json({
       success: true,
-      data
+      data: rows
     });
   } catch (error) {
     console.error('Get skills error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch skills.',
-      error: error.message
+      message: 'Failed to fetch skills'
     });
   }
 };
 
-// Get single skill (Public)
+// Get single skill
 exports.getById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const [rows] = await db.query(
+      'SELECT * FROM skills WHERE id = ?',
+      [req.params.id]
+    );
 
-    const { data, error } = await supabase
-      .from('skills')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (error) throw error;
-
-    if (!data) {
+    if (rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Skill not found.'
+        message: 'Skill not found'
       });
     }
 
     res.json({
       success: true,
-      data
+      data: rows[0]
     });
   } catch (error) {
     console.error('Get skill error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch skill.',
-      error: error.message
+      message: 'Failed to fetch skill'
     });
   }
 };
 
-// Create skill (Admin only)
+// Create skill
 exports.create = async (req, res) => {
   try {
-    const { name, category, icon, proficiency, display_order } = req.body;
+    const { name, category, proficiency, icon, display_order } = req.body;
 
     if (!name || !category) {
       return res.status(400).json({
         success: false,
-        message: 'Name and category are required.'
+        message: 'Name and category are required'
       });
     }
 
-    const { data, error } = await supabase
-      .from('skills')
-      .insert({
-        name,
-        category,
-        icon,
-        proficiency: proficiency || 80,
-        display_order: display_order || 0
-      })
-      .select()
-      .single();
+    const id = uuidv4();
+    await db.query(
+      `INSERT INTO skills (id, name, category, proficiency, icon, display_order)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [id, name, category, proficiency || 80, icon, display_order || 0]
+    );
 
-    if (error) throw error;
+    const [rows] = await db.query('SELECT * FROM skills WHERE id = ?', [id]);
 
     res.status(201).json({
       success: true,
-      message: 'Skill created successfully.',
-      data
+      message: 'Skill created successfully',
+      data: rows[0]
     });
   } catch (error) {
     console.error('Create skill error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to create skill.',
-      error: error.message
+      message: 'Failed to create skill'
     });
   }
 };
 
-// Update skill (Admin only)
+// Update skill
 exports.update = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { name, category, icon, proficiency, display_order } = req.body;
+    const { name, category, proficiency, icon, display_order } = req.body;
 
-    const { data, error } = await supabase
-      .from('skills')
-      .update({
-        name,
-        category,
-        icon,
-        proficiency,
-        display_order
-      })
-      .eq('id', id)
-      .select()
-      .single();
+    const [existing] = await db.query('SELECT * FROM skills WHERE id = ?', [req.params.id]);
+    if (existing.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Skill not found'
+      });
+    }
 
-    if (error) throw error;
+    await db.query(
+      `UPDATE skills SET name = ?, category = ?, proficiency = ?, icon = ?, display_order = ? WHERE id = ?`,
+      [
+        name || existing[0].name,
+        category || existing[0].category,
+        proficiency !== undefined ? proficiency : existing[0].proficiency,
+        icon !== undefined ? icon : existing[0].icon,
+        display_order !== undefined ? display_order : existing[0].display_order,
+        req.params.id
+      ]
+    );
+
+    const [rows] = await db.query('SELECT * FROM skills WHERE id = ?', [req.params.id]);
 
     res.json({
       success: true,
-      message: 'Skill updated successfully.',
-      data
+      message: 'Skill updated successfully',
+      data: rows[0]
     });
   } catch (error) {
     console.error('Update skill error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update skill.',
-      error: error.message
+      message: 'Failed to update skill'
     });
   }
 };
 
-// Delete skill (Admin only)
+// Delete skill
 exports.delete = async (req, res) => {
   try {
-    const { id } = req.params;
+    const [existing] = await db.query('SELECT * FROM skills WHERE id = ?', [req.params.id]);
+    if (existing.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Skill not found'
+      });
+    }
 
-    const { error } = await supabase
-      .from('skills')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+    await db.query('DELETE FROM skills WHERE id = ?', [req.params.id]);
 
     res.json({
       success: true,
-      message: 'Skill deleted successfully.'
+      message: 'Skill deleted successfully'
     });
   } catch (error) {
     console.error('Delete skill error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to delete skill.',
-      error: error.message
+      message: 'Failed to delete skill'
     });
   }
 };

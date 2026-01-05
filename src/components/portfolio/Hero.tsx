@@ -1,8 +1,7 @@
 import { ArrowDown, Github, Linkedin, Mail, Twitter, Download, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useProfileSettings } from "@/hooks/useProfileSettings";
-import { useNodeAuth } from "@/contexts/NodeAuthContext";
+import { useNodeProfileSettings as useProfileSettings, useNodeAuth } from "@/hooks/useNodeBackend";
 import { ProfilePhotoDialog } from "@/components/admin/ProfilePhotoDialog";
 
 export function Hero() {

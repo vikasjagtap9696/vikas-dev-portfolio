@@ -1,164 +1,153 @@
-const supabase = require('../config/supabase');
+const db = require('../config/database');
+const { v4: uuidv4 } = require('uuid');
 
-// Get all certificates (Public)
+// Get all certificates
 exports.getAll = async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from('certificates')
-      .select('*')
-      .order('display_order', { ascending: true });
-
-    if (error) throw error;
+    const [rows] = await db.query(
+      'SELECT * FROM certificates ORDER BY display_order ASC'
+    );
 
     res.json({
       success: true,
-      data
+      data: rows
     });
   } catch (error) {
     console.error('Get certificates error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch certificates.',
-      error: error.message
+      message: 'Failed to fetch certificates'
     });
   }
 };
 
-// Get single certificate (Public)
+// Get single certificate
 exports.getById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const [rows] = await db.query(
+      'SELECT * FROM certificates WHERE id = ?',
+      [req.params.id]
+    );
 
-    const { data, error } = await supabase
-      .from('certificates')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (error) throw error;
-
-    if (!data) {
+    if (rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Certificate not found.'
+        message: 'Certificate not found'
       });
     }
 
     res.json({
       success: true,
-      data
+      data: rows[0]
     });
   } catch (error) {
     console.error('Get certificate error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch certificate.',
-      error: error.message
+      message: 'Failed to fetch certificate'
     });
   }
 };
 
-// Create certificate (Admin only)
+// Create certificate
 exports.create = async (req, res) => {
   try {
-    const { title, issuer, issue_date, image_url, credential_url, display_order } = req.body;
+    const { title, issuer, issue_date, credential_url, image_url, display_order } = req.body;
 
     if (!title || !issuer) {
       return res.status(400).json({
         success: false,
-        message: 'Title and issuer are required.'
+        message: 'Title and issuer are required'
       });
     }
 
-    const { data, error } = await supabase
-      .from('certificates')
-      .insert({
-        title,
-        issuer,
-        issue_date,
-        image_url,
-        credential_url,
-        display_order: display_order || 0
-      })
-      .select()
-      .single();
+    const id = uuidv4();
+    await db.query(
+      `INSERT INTO certificates (id, title, issuer, issue_date, credential_url, image_url, display_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [id, title, issuer, issue_date, credential_url, image_url, display_order || 0]
+    );
 
-    if (error) throw error;
+    const [rows] = await db.query('SELECT * FROM certificates WHERE id = ?', [id]);
 
     res.status(201).json({
       success: true,
-      message: 'Certificate created successfully.',
-      data
+      message: 'Certificate created successfully',
+      data: rows[0]
     });
   } catch (error) {
     console.error('Create certificate error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to create certificate.',
-      error: error.message
+      message: 'Failed to create certificate'
     });
   }
 };
 
-// Update certificate (Admin only)
+// Update certificate
 exports.update = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { title, issuer, issue_date, image_url, credential_url, display_order } = req.body;
+    const { title, issuer, issue_date, credential_url, image_url, display_order } = req.body;
 
-    const { data, error } = await supabase
-      .from('certificates')
-      .update({
-        title,
-        issuer,
-        issue_date,
-        image_url,
-        credential_url,
-        display_order
-      })
-      .eq('id', id)
-      .select()
-      .single();
+    const [existing] = await db.query('SELECT * FROM certificates WHERE id = ?', [req.params.id]);
+    if (existing.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Certificate not found'
+      });
+    }
 
-    if (error) throw error;
+    await db.query(
+      `UPDATE certificates SET title = ?, issuer = ?, issue_date = ?, credential_url = ?, image_url = ?, display_order = ? WHERE id = ?`,
+      [
+        title || existing[0].title,
+        issuer || existing[0].issuer,
+        issue_date !== undefined ? issue_date : existing[0].issue_date,
+        credential_url !== undefined ? credential_url : existing[0].credential_url,
+        image_url !== undefined ? image_url : existing[0].image_url,
+        display_order !== undefined ? display_order : existing[0].display_order,
+        req.params.id
+      ]
+    );
+
+    const [rows] = await db.query('SELECT * FROM certificates WHERE id = ?', [req.params.id]);
 
     res.json({
       success: true,
-      message: 'Certificate updated successfully.',
-      data
+      message: 'Certificate updated successfully',
+      data: rows[0]
     });
   } catch (error) {
     console.error('Update certificate error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update certificate.',
-      error: error.message
+      message: 'Failed to update certificate'
     });
   }
 };
 
-// Delete certificate (Admin only)
+// Delete certificate
 exports.delete = async (req, res) => {
   try {
-    const { id } = req.params;
+    const [existing] = await db.query('SELECT * FROM certificates WHERE id = ?', [req.params.id]);
+    if (existing.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Certificate not found'
+      });
+    }
 
-    const { error } = await supabase
-      .from('certificates')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+    await db.query('DELETE FROM certificates WHERE id = ?', [req.params.id]);
 
     res.json({
       success: true,
-      message: 'Certificate deleted successfully.'
+      message: 'Certificate deleted successfully'
     });
   } catch (error) {
     console.error('Delete certificate error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to delete certificate.',
-      error: error.message
+      message: 'Failed to delete certificate'
     });
   }
 };

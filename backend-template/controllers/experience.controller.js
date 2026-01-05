@@ -1,191 +1,187 @@
-const supabase = require('../config/supabase');
+const db = require('../config/database');
+const { v4: uuidv4 } = require('uuid');
 
-// Get all experiences (Public)
+// Get all experiences
 exports.getAll = async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from('experiences')
-      .select('*')
-      .order('display_order', { ascending: true });
+    const [rows] = await db.query(
+      'SELECT * FROM experiences ORDER BY display_order ASC'
+    );
 
-    if (error) throw error;
+    // Parse JSON fields
+    const experiences = rows.map(row => ({
+      ...row,
+      description: row.description ? (typeof row.description === 'string' ? JSON.parse(row.description) : row.description) : [],
+      technologies: row.technologies ? (typeof row.technologies === 'string' ? JSON.parse(row.technologies) : row.technologies) : []
+    }));
 
     res.json({
       success: true,
-      data
+      data: experiences
     });
   } catch (error) {
     console.error('Get experiences error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch experiences.',
-      error: error.message
+      message: 'Failed to fetch experiences'
     });
   }
 };
 
-// Get single experience (Public)
+// Get single experience
 exports.getById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const [rows] = await db.query(
+      'SELECT * FROM experiences WHERE id = ?',
+      [req.params.id]
+    );
 
-    const { data, error } = await supabase
-      .from('experiences')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (error) throw error;
-
-    if (!data) {
+    if (rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Experience not found.'
+        message: 'Experience not found'
       });
     }
 
+    const experience = {
+      ...rows[0],
+      description: rows[0].description ? (typeof rows[0].description === 'string' ? JSON.parse(rows[0].description) : rows[0].description) : [],
+      technologies: rows[0].technologies ? (typeof rows[0].technologies === 'string' ? JSON.parse(rows[0].technologies) : rows[0].technologies) : []
+    };
+
     res.json({
       success: true,
-      data
+      data: experience
     });
   } catch (error) {
     console.error('Get experience error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch experience.',
-      error: error.message
+      message: 'Failed to fetch experience'
     });
   }
 };
 
-// Create experience (Admin only)
+// Create experience
 exports.create = async (req, res) => {
   try {
-    const { 
-      title, 
-      company, 
-      location, 
-      period, 
-      description, 
-      technologies, 
-      experience_type,
-      is_current,
-      display_order 
-    } = req.body;
+    const { title, company, location, period, description, technologies, experience_type, is_current, display_order } = req.body;
 
     if (!title || !company || !period) {
       return res.status(400).json({
         success: false,
-        message: 'Title, company, and period are required.'
+        message: 'Title, company, and period are required'
       });
     }
 
-    const { data, error } = await supabase
-      .from('experiences')
-      .insert({
-        title,
-        company,
-        location,
-        period,
-        description: description || [],
-        technologies: technologies || [],
-        experience_type: experience_type || 'job',
-        is_current: is_current || false,
-        display_order: display_order || 0
-      })
-      .select()
-      .single();
+    const id = uuidv4();
+    await db.query(
+      `INSERT INTO experiences (id, title, company, location, period, description, technologies, experience_type, is_current, display_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id, title, company, location, period,
+        JSON.stringify(description || []),
+        JSON.stringify(technologies || []),
+        experience_type || 'job',
+        is_current || false,
+        display_order || 0
+      ]
+    );
 
-    if (error) throw error;
+    const [rows] = await db.query('SELECT * FROM experiences WHERE id = ?', [id]);
+    const experience = {
+      ...rows[0],
+      description: rows[0].description ? (typeof rows[0].description === 'string' ? JSON.parse(rows[0].description) : rows[0].description) : [],
+      technologies: rows[0].technologies ? (typeof rows[0].technologies === 'string' ? JSON.parse(rows[0].technologies) : rows[0].technologies) : []
+    };
 
     res.status(201).json({
       success: true,
-      message: 'Experience created successfully.',
-      data
+      message: 'Experience created successfully',
+      data: experience
     });
   } catch (error) {
     console.error('Create experience error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to create experience.',
-      error: error.message
+      message: 'Failed to create experience'
     });
   }
 };
 
-// Update experience (Admin only)
+// Update experience
 exports.update = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { 
-      title, 
-      company, 
-      location, 
-      period, 
-      description, 
-      technologies, 
-      experience_type,
-      is_current,
-      display_order 
-    } = req.body;
+    const { title, company, location, period, description, technologies, experience_type, is_current, display_order } = req.body;
 
-    const { data, error } = await supabase
-      .from('experiences')
-      .update({
-        title,
-        company,
-        location,
-        period,
-        description,
-        technologies,
-        experience_type,
-        is_current,
-        display_order,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select()
-      .single();
+    const [existing] = await db.query('SELECT * FROM experiences WHERE id = ?', [req.params.id]);
+    if (existing.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Experience not found'
+      });
+    }
 
-    if (error) throw error;
+    await db.query(
+      `UPDATE experiences SET title = ?, company = ?, location = ?, period = ?, description = ?, 
+       technologies = ?, experience_type = ?, is_current = ?, display_order = ? WHERE id = ?`,
+      [
+        title || existing[0].title,
+        company || existing[0].company,
+        location !== undefined ? location : existing[0].location,
+        period || existing[0].period,
+        description ? JSON.stringify(description) : existing[0].description,
+        technologies ? JSON.stringify(technologies) : existing[0].technologies,
+        experience_type || existing[0].experience_type,
+        is_current !== undefined ? is_current : existing[0].is_current,
+        display_order !== undefined ? display_order : existing[0].display_order,
+        req.params.id
+      ]
+    );
+
+    const [rows] = await db.query('SELECT * FROM experiences WHERE id = ?', [req.params.id]);
+    const experience = {
+      ...rows[0],
+      description: rows[0].description ? (typeof rows[0].description === 'string' ? JSON.parse(rows[0].description) : rows[0].description) : [],
+      technologies: rows[0].technologies ? (typeof rows[0].technologies === 'string' ? JSON.parse(rows[0].technologies) : rows[0].technologies) : []
+    };
 
     res.json({
       success: true,
-      message: 'Experience updated successfully.',
-      data
+      message: 'Experience updated successfully',
+      data: experience
     });
   } catch (error) {
     console.error('Update experience error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update experience.',
-      error: error.message
+      message: 'Failed to update experience'
     });
   }
 };
 
-// Delete experience (Admin only)
+// Delete experience
 exports.delete = async (req, res) => {
   try {
-    const { id } = req.params;
+    const [existing] = await db.query('SELECT * FROM experiences WHERE id = ?', [req.params.id]);
+    if (existing.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Experience not found'
+      });
+    }
 
-    const { error } = await supabase
-      .from('experiences')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+    await db.query('DELETE FROM experiences WHERE id = ?', [req.params.id]);
 
     res.json({
       success: true,
-      message: 'Experience deleted successfully.'
+      message: 'Experience deleted successfully'
     });
   } catch (error) {
     console.error('Delete experience error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to delete experience.',
-      error: error.message
+      message: 'Failed to delete experience'
     });
   }
 };

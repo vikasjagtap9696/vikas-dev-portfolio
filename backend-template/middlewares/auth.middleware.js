@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const jwtConfig = require('../config/jwt');
-const supabase = require('../config/supabase');
+const db = require('../config/database');
 
 // Verify JWT token
 const verifyToken = (req, res, next) => {
@@ -30,14 +30,12 @@ const verifyToken = (req, res, next) => {
 // Check if user is admin
 const isAdmin = async (req, res, next) => {
   try {
-    const { data: userRole, error } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', req.user.id)
-      .eq('role', 'admin')
-      .maybeSingle();
+    const [roles] = await db.query(
+      'SELECT * FROM user_roles WHERE user_id = ? AND role = ?',
+      [req.user.id, 'admin']
+    );
 
-    if (error || !userRole) {
+    if (roles.length === 0) {
       return res.status(403).json({
         success: false,
         message: 'Access denied. Admin privileges required.'

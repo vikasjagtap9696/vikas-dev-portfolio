@@ -309,6 +309,171 @@ export function useNodeExperiences() {
   return { experiences, loading, addExperience, updateExperience, deleteExperience, refetch: fetchExperiences };
 }
 
+// Profile Settings interface
+export interface ProfileSettings {
+  id: string;
+  hero_name: string | null;
+  hero_title: string | null;
+  hero_subtitle: string | null;
+  hero_bio: string | null;
+  hero_background_url: string | null;
+  avatar_url: string | null;
+  about_intro: string | null;
+  about_description: string | null;
+  about_image_url: string | null;
+  about_education_primary: string | null;
+  about_education_secondary: string | null;
+  career_goals: string[] | null;
+  github_url: string | null;
+  linkedin_url: string | null;
+  twitter_url: string | null;
+  email: string | null;
+  stat_years_experience: string | null;
+  stat_projects_completed: string | null;
+  stat_technologies: string | null;
+  stat_client_satisfaction: string | null;
+  footer_tagline: string | null;
+  footer_location: string | null;
+  footer_copyright: string | null;
+}
+
+// Profile Settings Hook
+export function useNodeProfileSettings() {
+  const [data, setData] = useState<ProfileSettings | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchProfile = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const result = await api.getProfile() as ProfileSettings;
+      setData(result);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  return { data, isLoading, refetch: fetchProfile };
+}
+
+// Update Profile Settings Hook
+export function useNodeUpdateProfileSettings() {
+  const { toast } = useToast();
+  const [isPending, setIsPending] = useState(false);
+
+  const mutateAsync = async (updates: Partial<ProfileSettings>) => {
+    setIsPending(true);
+    try {
+      const result = await api.updateProfile(updates);
+      toast({ title: "Profile updated successfully!" });
+      return result;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      toast({ title: "Error updating profile", description: message, variant: "destructive" });
+      throw error;
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  return { mutateAsync, isPending };
+}
+
+// Contact Submission interface
+export interface ContactSubmission {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+}
+
+// Contact Submissions Hook
+export function useNodeContactSubmissions() {
+  const [submissions, setSubmissions] = useState<ContactSubmission[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  const fetchSubmissions = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const result = await api.getContactSubmissions() as ContactSubmission[];
+      setSubmissions(result || []);
+    } catch (error) {
+      console.error("Error fetching submissions:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchSubmissions();
+  }, [fetchSubmissions]);
+
+  const markAsRead = async (id: string) => {
+    try {
+      await api.markContactAsRead(id);
+      setSubmissions(submissions.map(s => s.id === id ? { ...s, is_read: true } : s));
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      toast({ title: "Error", description: message, variant: "destructive" });
+    }
+  };
+
+  const deleteSubmission = async (id: string) => {
+    try {
+      await api.deleteContact(id);
+      setSubmissions(submissions.filter(s => s.id !== id));
+      toast({ title: "Submission deleted" });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      toast({ title: "Error", description: message, variant: "destructive" });
+    }
+  };
+
+  const unreadCount = submissions.filter(s => !s.is_read).length;
+
+  return { submissions, isLoading, markAsRead, deleteSubmission, unreadCount, refetch: fetchSubmissions };
+}
+
+// Resume Settings interface
+export interface ResumeSettings {
+  id: string;
+  file_url: string | null;
+  file_name: string | null;
+}
+
+// Resume Settings Hook
+export function useNodeResume() {
+  const [resumeSettings, setResumeSettings] = useState<ResumeSettings | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchResume = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const result = await api.getResume() as ResumeSettings;
+      setResumeSettings(result);
+    } catch (error) {
+      console.error("Error fetching resume:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchResume();
+  }, [fetchResume]);
+
+  return { resumeSettings, isLoading, refetch: fetchResume };
+}
+
 // Auth Hook for Node.js backend
 export function useNodeAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

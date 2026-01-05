@@ -1,64 +1,66 @@
-const supabase = require('../config/supabase');
+const db = require('../config/database');
+const { v4: uuidv4 } = require('uuid');
 
-// Get all projects (Public)
+// Get all projects
 exports.getAll = async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .order('display_order', { ascending: true });
-
-    if (error) throw error;
+    const [rows] = await db.query(
+      'SELECT * FROM projects ORDER BY display_order ASC'
+    );
+    
+    // Parse JSON fields
+    const projects = rows.map(row => ({
+      ...row,
+      tech_stack: row.tech_stack ? (typeof row.tech_stack === 'string' ? JSON.parse(row.tech_stack) : row.tech_stack) : []
+    }));
 
     res.json({
       success: true,
-      data
+      data: projects
     });
   } catch (error) {
     console.error('Get projects error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch projects.',
-      error: error.message
+      message: 'Failed to fetch projects'
     });
   }
 };
 
-// Get single project (Public)
+// Get single project
 exports.getById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const [rows] = await db.query(
+      'SELECT * FROM projects WHERE id = ?',
+      [req.params.id]
+    );
 
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (error) throw error;
-
-    if (!data) {
+    if (rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Project not found.'
+        message: 'Project not found'
       });
     }
 
+    const project = {
+      ...rows[0],
+      tech_stack: rows[0].tech_stack ? (typeof rows[0].tech_stack === 'string' ? JSON.parse(rows[0].tech_stack) : rows[0].tech_stack) : []
+    };
+
     res.json({
       success: true,
-      data
+      data: project
     });
   } catch (error) {
     console.error('Get project error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch project.',
-      error: error.message
+      message: 'Failed to fetch project'
     });
   }
 };
 
-// Create project (Admin only)
+// Create project
 exports.create = async (req, res) => {
   try {
     const { title, description, image_url, tech_stack, github_url, live_url, featured, display_order } = req.body;
@@ -66,104 +68,108 @@ exports.create = async (req, res) => {
     if (!title) {
       return res.status(400).json({
         success: false,
-        message: 'Title is required.'
+        message: 'Title is required'
       });
     }
 
-    const { data, error } = await supabase
-      .from('projects')
-      .insert({
-        title,
-        description,
-        image_url,
-        tech_stack: tech_stack || [],
-        github_url,
-        live_url,
-        featured: featured || false,
-        display_order: display_order || 0
-      })
-      .select()
-      .single();
+    const id = uuidv4();
+    await db.query(
+      `INSERT INTO projects (id, title, description, image_url, tech_stack, github_url, live_url, featured, display_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, title, description, image_url, JSON.stringify(tech_stack || []), github_url, live_url, featured || false, display_order || 0]
+    );
 
-    if (error) throw error;
+    const [rows] = await db.query('SELECT * FROM projects WHERE id = ?', [id]);
+    const project = {
+      ...rows[0],
+      tech_stack: rows[0].tech_stack ? (typeof rows[0].tech_stack === 'string' ? JSON.parse(rows[0].tech_stack) : rows[0].tech_stack) : []
+    };
 
     res.status(201).json({
       success: true,
-      message: 'Project created successfully.',
-      data
+      message: 'Project created successfully',
+      data: project
     });
   } catch (error) {
     console.error('Create project error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to create project.',
-      error: error.message
+      message: 'Failed to create project'
     });
   }
 };
 
-// Update project (Admin only)
+// Update project
 exports.update = async (req, res) => {
   try {
-    const { id } = req.params;
     const { title, description, image_url, tech_stack, github_url, live_url, featured, display_order } = req.body;
 
-    const { data, error } = await supabase
-      .from('projects')
-      .update({
-        title,
-        description,
-        image_url,
-        tech_stack,
-        github_url,
-        live_url,
-        featured,
-        display_order,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select()
-      .single();
+    const [existing] = await db.query('SELECT * FROM projects WHERE id = ?', [req.params.id]);
+    if (existing.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Project not found'
+      });
+    }
 
-    if (error) throw error;
+    await db.query(
+      `UPDATE projects SET title = ?, description = ?, image_url = ?, tech_stack = ?, 
+       github_url = ?, live_url = ?, featured = ?, display_order = ? WHERE id = ?`,
+      [
+        title || existing[0].title,
+        description !== undefined ? description : existing[0].description,
+        image_url !== undefined ? image_url : existing[0].image_url,
+        tech_stack ? JSON.stringify(tech_stack) : existing[0].tech_stack,
+        github_url !== undefined ? github_url : existing[0].github_url,
+        live_url !== undefined ? live_url : existing[0].live_url,
+        featured !== undefined ? featured : existing[0].featured,
+        display_order !== undefined ? display_order : existing[0].display_order,
+        req.params.id
+      ]
+    );
+
+    const [rows] = await db.query('SELECT * FROM projects WHERE id = ?', [req.params.id]);
+    const project = {
+      ...rows[0],
+      tech_stack: rows[0].tech_stack ? (typeof rows[0].tech_stack === 'string' ? JSON.parse(rows[0].tech_stack) : rows[0].tech_stack) : []
+    };
 
     res.json({
       success: true,
-      message: 'Project updated successfully.',
-      data
+      message: 'Project updated successfully',
+      data: project
     });
   } catch (error) {
     console.error('Update project error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update project.',
-      error: error.message
+      message: 'Failed to update project'
     });
   }
 };
 
-// Delete project (Admin only)
+// Delete project
 exports.delete = async (req, res) => {
   try {
-    const { id } = req.params;
+    const [existing] = await db.query('SELECT * FROM projects WHERE id = ?', [req.params.id]);
+    if (existing.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Project not found'
+      });
+    }
 
-    const { error } = await supabase
-      .from('projects')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+    await db.query('DELETE FROM projects WHERE id = ?', [req.params.id]);
 
     res.json({
       success: true,
-      message: 'Project deleted successfully.'
+      message: 'Project deleted successfully'
     });
   } catch (error) {
     console.error('Delete project error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to delete project.',
-      error: error.message
+      message: 'Failed to delete project'
     });
   }
 };
