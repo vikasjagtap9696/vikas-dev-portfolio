@@ -1,12 +1,13 @@
 import { ArrowDown, Github, Linkedin, Mail, Twitter, Download, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useNodeProfileSettings as useProfileSettings, useNodeAuth } from "@/hooks/useNodeBackend";
+import { useProfileSettings } from "@/hooks/useProfileSettings";
+import { useAuth } from "@/contexts/AuthContext";
 import { ProfilePhotoDialog } from "@/components/admin/ProfilePhotoDialog";
 
 export function Hero() {
   const { data: profileSettings } = useProfileSettings();
-  const { isAdmin } = useNodeAuth();
+  const { isAdmin } = useAuth();
 
   const handleScroll = (href: string) => {
     const element = document.querySelector(href);

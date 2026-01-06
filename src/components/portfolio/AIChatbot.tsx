@@ -340,7 +340,7 @@ const getFollowUpSuggestions = (lastUserMessage: string, lastAssistantMessage: s
   ];
 };
 
-const CHAT_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/chat`;
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/portfolio-assistant`;
 const STORAGE_KEY = "vikas-ai-chat-history";
 
 const topicLabels: Record<Topic, { label: string; color: string }> = {
