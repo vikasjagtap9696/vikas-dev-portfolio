@@ -1,127 +1,152 @@
-import { Code, GraduationCap, Target, Briefcase, Shield } from "lucide-react";
 import { useProfileSettings } from "@/hooks/useProfileSettings";
 
 export function About() {
   const { data: profileSettings } = useProfileSettings();
 
+  const careerGoals = profileSettings?.career_goals || [
+    "Become an industry-ready all-round developer",
+    "Build products that solve real-world problems",
+    "Contribute to impactful software solutions",
+    "Continuously improve through real-world projects",
+  ];
+
+  const parseEducation = (edu: string) => {
+    const [title, details] = edu.split("|").map(s => s.trim());
+    return { title, details };
+  };
+
+  const primaryEdu = parseEducation(profileSettings?.about_education_primary || "Bachelor of Computer Science | Baramati, Maharashtra • Graduate");
+  const secondaryEdu = parseEducation(profileSettings?.about_education_secondary || "Full Stack Development | Self-taught & Continuous Learning");
+
   return (
-    <section id="about" className="py-20 relative">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+    <section id="about" className="section">
+      <div className="container">
+        <div className="text-center" style={{ marginBottom: "4rem" }}>
+          <h2 className="section-title">
             About <span className="gradient-text">Me</span>
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="section-subtitle">
             {profileSettings?.about_intro || "A passionate developer committed to creating impactful digital solutions"}
           </p>
         </div>
 
         {/* About Image */}
         {profileSettings?.about_image_url && (
-          <div className="flex justify-center mb-12">
+          <div className="flex justify-center" style={{ marginBottom: "3rem" }}>
             <div className="relative">
               <img 
                 src={profileSettings.about_image_url} 
                 alt="About me" 
-                className="w-64 h-64 md:w-80 md:h-80 object-cover rounded-2xl shadow-xl border-4 border-primary/20"
+                style={{
+                  width: "16rem",
+                  height: "16rem",
+                  objectFit: "cover",
+                  borderRadius: "var(--radius-2xl)",
+                  boxShadow: "var(--shadow-lg)",
+                  border: "4px solid rgba(139, 92, 246, 0.2)"
+                }}
               />
-              <div className="absolute -inset-4 bg-primary/10 rounded-2xl -z-10 blur-xl" />
             </div>
           </div>
         )}
 
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Profile Info */}
-          <div className="space-y-6">
-            <div className="glass p-6 rounded-xl hover-glow transition-all duration-300">
-              <h3 className="text-xl font-semibold mb-4 flex items-center gap-3">
-                <Code className="h-5 w-5 text-primary" />
-                Who I Am
-              </h3>
-              <p className="text-muted-foreground leading-relaxed">
+        <div className="about-grid">
+          {/* Left Column */}
+          <div className="flex flex-col gap-6">
+            {/* Who I Am */}
+            <div className="about-card glass hover-glow">
+              <div className="about-card-header">
+                <div className="about-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="16 18 22 12 16 6"></polyline>
+                    <polyline points="8 6 2 12 8 18"></polyline>
+                  </svg>
+                </div>
+                <h3 className="about-card-title">Who I Am</h3>
+              </div>
+              <p className="about-card-content">
                 {profileSettings?.about_description || "I am Vikas Prakash Jagtap, a passionate Full Stack Web Developer and Computer Science graduate with strong problem-solving skills and hands-on experience in building scalable web applications. I enjoy working with modern technologies like React, Node.js, Java, SQL, and PostgreSQL. My goal is to become an industry-ready all-round developer and contribute to impactful software solutions."}
               </p>
             </div>
 
-            <div className="glass p-6 rounded-xl hover-glow transition-all duration-300">
-              <h3 className="text-xl font-semibold mb-4 flex items-center gap-3">
-                <GraduationCap className="h-5 w-5 text-accent" />
-                Education
-              </h3>
-              <div className="space-y-3">
+            {/* Education */}
+            <div className="about-card glass hover-glow">
+              <div className="about-card-header">
+                <div className="about-icon" style={{ background: "rgba(6, 182, 212, 0.2)", color: "var(--color-accent)" }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                    <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                  </svg>
+                </div>
+                <h3 className="about-card-title">Education</h3>
+              </div>
+              <div className="flex flex-col gap-3">
                 <div>
-                  {(() => {
-                    const primary = profileSettings?.about_education_primary || "Bachelor of Computer Science | Baramati, Maharashtra • Graduate";
-                    const [title, details] = primary.split("|").map(s => s.trim());
-                    return (
-                      <>
-                        <p className="font-medium">{title}</p>
-                        {details && <p className="text-muted-foreground text-sm">{details}</p>}
-                      </>
-                    );
-                  })()}
+                  <p className="font-medium">{primaryEdu.title}</p>
+                  {primaryEdu.details && <p className="text-muted text-sm">{primaryEdu.details}</p>}
                 </div>
                 <div>
-                  {(() => {
-                    const secondary = profileSettings?.about_education_secondary || "Full Stack Development | Self-taught & Continuous Learning";
-                    const [title, details] = secondary.split("|").map(s => s.trim());
-                    return (
-                      <>
-                        <p className="font-medium">{title}</p>
-                        {details && <p className="text-muted-foreground text-sm">{details}</p>}
-                      </>
-                    );
-                  })()}
+                  <p className="font-medium">{secondaryEdu.title}</p>
+                  {secondaryEdu.details && <p className="text-muted text-sm">{secondaryEdu.details}</p>}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Goals & What I Do */}
-          <div className="space-y-6">
-            <div className="glass p-6 rounded-xl hover-glow transition-all duration-300">
-              <h3 className="text-xl font-semibold mb-4 flex items-center gap-3">
-                <Target className="h-5 w-5 text-primary" />
-                Career Goals
-              </h3>
-              <ul className="space-y-2 text-muted-foreground">
-                {(profileSettings?.career_goals || [
-                  "Become an industry-ready all-round developer",
-                  "Build products that solve real-world problems",
-                  "Contribute to impactful software solutions",
-                  "Continuously improve through real-world projects",
-                ]).map((goal, index) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <span className="text-primary mt-1">▹</span>
+          {/* Right Column */}
+          <div className="flex flex-col gap-6">
+            {/* Career Goals */}
+            <div className="about-card glass hover-glow">
+              <div className="about-card-header">
+                <div className="about-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <circle cx="12" cy="12" r="6"></circle>
+                    <circle cx="12" cy="12" r="2"></circle>
+                  </svg>
+                </div>
+                <h3 className="about-card-title">Career Goals</h3>
+              </div>
+              <ul className="about-list">
+                {careerGoals.map((goal, index) => (
+                  <li key={index} className="about-list-item">
                     {goal}
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="glass p-6 rounded-xl hover-glow transition-all duration-300">
-              <h3 className="text-xl font-semibold mb-4 flex items-center gap-3">
-                <Briefcase className="h-5 w-5 text-accent" />
-                What I Do
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-4 rounded-lg bg-secondary/50">
-                  <p className="font-medium text-sm">Frontend</p>
-                  <p className="text-muted-foreground text-xs">React, Next.js, TypeScript</p>
+            {/* What I Do */}
+            <div className="about-card glass hover-glow">
+              <div className="about-card-header">
+                <div className="about-icon" style={{ background: "rgba(6, 182, 212, 0.2)", color: "var(--color-accent)" }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                  </svg>
                 </div>
-                <div className="text-center p-4 rounded-lg bg-secondary/50">
-                  <p className="font-medium text-sm">Backend</p>
-                  <p className="text-muted-foreground text-xs">Node.js, Java, Express</p>
+                <h3 className="about-card-title">What I Do</h3>
+              </div>
+              <div className="what-i-do-grid">
+                <div className="what-i-do-item">
+                  <p className="what-i-do-title">Frontend</p>
+                  <p className="what-i-do-tech">React, Next.js, TypeScript</p>
                 </div>
-                <div className="text-center p-4 rounded-lg bg-secondary/50">
-                  <p className="font-medium text-sm">Database</p>
-                  <p className="text-muted-foreground text-xs">SQL, PostgreSQL, MongoDB</p>
+                <div className="what-i-do-item">
+                  <p className="what-i-do-title">Backend</p>
+                  <p className="what-i-do-tech">Node.js, Java, Express</p>
                 </div>
-                <div className="text-center p-4 rounded-lg bg-secondary/50 flex items-center justify-center gap-2">
-                  <Shield className="h-4 w-4 text-primary" />
+                <div className="what-i-do-item">
+                  <p className="what-i-do-title">Database</p>
+                  <p className="what-i-do-tech">SQL, PostgreSQL, MongoDB</p>
+                </div>
+                <div className="what-i-do-item" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  </svg>
                   <div>
-                    <p className="font-medium text-sm">Security</p>
-                    <p className="text-muted-foreground text-xs">Cybersecurity</p>
+                    <p className="what-i-do-title">Security</p>
+                    <p className="what-i-do-tech">Cybersecurity</p>
                   </div>
                 </div>
               </div>
