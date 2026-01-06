@@ -1,14 +1,6 @@
-import { useState } from "react";
-import { ExternalLink, Github, Folder, Plus, Edit, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/contexts/AuthContext";
 import { useProjects, Project } from "@/hooks/useProjects";
-import { ProjectDialog } from "@/components/admin/ProjectDialog";
-import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 
-// Fallback projects for when database is empty
-const fallbackProjects = [
+const fallbackProjects: Project[] = [
   {
     id: "1",
     title: "E-Commerce Platform",
@@ -45,110 +37,50 @@ const fallbackProjects = [
 ];
 
 export function Projects() {
-  const { isAdmin } = useAuth();
-  const { projects: dbProjects, loading, addProject, updateProject, deleteProject } = useProjects();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<Project | undefined>();
-  const [projectToDelete, setProjectToDelete] = useState<Project | undefined>();
-
+  const { projects: dbProjects } = useProjects();
   const projects = dbProjects.length > 0 ? dbProjects : fallbackProjects;
 
-  const handleAdd = () => {
-    setSelectedProject(undefined);
-    setDialogOpen(true);
-  };
-
-  const handleEdit = (project: Project) => {
-    setSelectedProject(project);
-    setDialogOpen(true);
-  };
-
-  const handleDeleteClick = (project: Project) => {
-    setProjectToDelete(project);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (projectToDelete) {
-      await deleteProject(projectToDelete.id);
-      setDeleteDialogOpen(false);
-      setProjectToDelete(undefined);
-    }
-  };
-
-  const handleSave = async (projectData: Omit<Project, "id">) => {
-    if (selectedProject) {
-      return updateProject(selectedProject.id, projectData);
-    }
-    return addProject(projectData);
-  };
-
   const featuredProjects = projects.filter((p) => p.featured);
-  const otherProjects = projects.filter((p) => !p.featured);
 
   return (
-    <section id="projects" className="py-20 relative">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+    <section id="projects" className="section">
+      <div className="container">
+        <div className="text-center" style={{ marginBottom: "4rem" }}>
+          <h2 className="section-title">
             Featured <span className="gradient-text">Projects</span>
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="section-subtitle">
             A showcase of my recent work and personal projects
           </p>
-          {isAdmin && (
-            <Button onClick={handleAdd} className="mt-4" size="sm">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Project
-            </Button>
-          )}
         </div>
 
         {/* Featured Projects */}
-        <div className="grid lg:grid-cols-3 gap-8 mb-12">
+        <div className="projects-grid">
           {featuredProjects.map((project, index) => (
             <div
               key={project.id}
-              className="group glass rounded-xl overflow-hidden hover-glow transition-all duration-300 relative"
+              className="project-card glass hover-glow animate-fade-in"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              {isAdmin && (
-                <div className="absolute top-2 left-2 z-10 flex gap-1">
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    className="h-8 w-8"
-                    onClick={() => handleEdit(project)}
-                  >
-                    <Edit className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="destructive"
-                    className="h-8 w-8"
-                    onClick={() => handleDeleteClick(project)}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              )}
-              <div className="relative overflow-hidden h-48">
+              <div className="project-image-container">
                 <img
                   src={project.image_url || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop"}
                   alt={project.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="project-image"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
-                <div className="absolute top-4 right-4 flex gap-2">
+                <div className="project-image-overlay" />
+                <div className="project-links">
                   {project.github_url && (
                     <a
                       href={project.github_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-primary/20 transition-colors"
+                      className="project-link"
+                      aria-label="GitHub"
                     >
-                      <Github className="h-4 w-4" />
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                      </svg>
                     </a>
                   )}
                   {project.live_url && (
@@ -156,25 +88,24 @@ export function Projects() {
                       href={project.live_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-primary/20 transition-colors"
+                      className="project-link"
+                      aria-label="Live Demo"
                     >
-                      <ExternalLink className="h-4 w-4" />
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                      </svg>
                     </a>
                   )}
                 </div>
               </div>
-              <div className="p-6">
-                <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">
-                  {project.title}
-                </h3>
-                <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
-                  {project.description}
-                </p>
-                <div className="flex flex-wrap gap-2">
+              <div className="project-content">
+                <h3 className="project-title">{project.title}</h3>
+                <p className="project-description">{project.description}</p>
+                <div className="project-tech-stack">
                   {project.tech_stack?.slice(0, 4).map((tech) => (
-                    <Badge key={tech} variant="secondary" className="text-xs">
-                      {tech}
-                    </Badge>
+                    <span key={tech} className="badge">{tech}</span>
                   ))}
                 </div>
               </div>
@@ -182,108 +113,20 @@ export function Projects() {
           ))}
         </div>
 
-        {/* Other Projects */}
-        {otherProjects.length > 0 && (
-          <>
-            <h3 className="text-xl font-semibold mb-6 text-center">Other Projects</h3>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {otherProjects.map((project, index) => (
-                <div
-                  key={project.id}
-                  className="glass p-6 rounded-xl hover-glow transition-all duration-300 group relative"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  {isAdmin && (
-                    <div className="absolute top-2 right-2 z-10 flex gap-1">
-                      <Button
-                        size="icon"
-                        variant="secondary"
-                        className="h-7 w-7"
-                        onClick={() => handleEdit(project)}
-                      >
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="destructive"
-                        className="h-7 w-7"
-                        onClick={() => handleDeleteClick(project)}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between mb-4">
-                    <Folder className="h-10 w-10 text-primary" />
-                    <div className="flex gap-2">
-                      {project.github_url && (
-                        <a
-                          href={project.github_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          <Github className="h-5 w-5" />
-                        </a>
-                      )}
-                      {project.live_url && (
-                        <a
-                          href={project.live_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          <ExternalLink className="h-5 w-5" />
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                  <h4 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
-                    {project.title}
-                  </h4>
-                  <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
-                    {project.description}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {project.tech_stack?.slice(0, 3).map((tech) => (
-                      <span key={tech} className="text-xs text-muted-foreground">
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        <div className="text-center mt-12">
-          <Button variant="outline" className="gradient-border" asChild>
-            <a
-              href="https://github.com/vikasjagtap"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Github className="mr-2 h-4 w-4" />
-              View All on GitHub
-            </a>
-          </Button>
+        <div className="text-center" style={{ marginTop: "3rem" }}>
+          <a
+            href="https://github.com/vikasjagtap"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-outline"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: "0.5rem" }}>
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+            View All on GitHub
+          </a>
         </div>
       </div>
-
-      <ProjectDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        project={selectedProject}
-        onSave={handleSave}
-      />
-
-      <DeleteConfirmDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        onConfirm={handleDeleteConfirm}
-        title="Project"
-      />
     </section>
   );
 }

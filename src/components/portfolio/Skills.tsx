@@ -1,28 +1,13 @@
-import { useState } from "react";
-import { Code2, Server, Database, Wrench, Plus, Edit, Trash2 } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
 import { useSkills, Skill } from "@/hooks/useSkills";
-import { SkillDialog } from "@/components/admin/SkillDialog";
-import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 
-const categoryIcons: Record<string, any> = {
-  "Frontend": Code2,
-  "Backend": Server,
-  "Database": Database,
-  "Tools & Others": Wrench
+const categoryConfig: Record<string, { color: "primary" | "accent" }> = {
+  "Frontend": { color: "primary" },
+  "Backend": { color: "accent" },
+  "Database": { color: "primary" },
+  "Tools & Others": { color: "accent" }
 };
 
-const categoryColors: Record<string, string> = {
-  "Frontend": "primary",
-  "Backend": "accent",
-  "Database": "primary",
-  "Tools & Others": "accent"
-};
-
-// Fallback skills for when database is empty
-const fallbackSkills = [
+const fallbackSkills: Skill[] = [
   { id: "1", name: "React.js", category: "Frontend", proficiency: 95, icon: null, display_order: 0 },
   { id: "2", name: "Next.js", category: "Frontend", proficiency: 85, icon: null, display_order: 1 },
   { id: "3", name: "TypeScript", category: "Frontend", proficiency: 90, icon: null, display_order: 2 },
@@ -34,14 +19,43 @@ const fallbackSkills = [
   { id: "9", name: "Docker", category: "Tools & Others", proficiency: 75, icon: null, display_order: 1 }
 ];
 
-export function Skills() {
-  const { isAdmin } = useAuth();
-  const { skills: dbSkills, loading, addSkill, updateSkill, deleteSkill } = useSkills();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedSkill, setSelectedSkill] = useState<Skill | undefined>();
-  const [skillToDelete, setSkillToDelete] = useState<Skill | undefined>();
+const CategoryIcon = ({ category }: { category: string }) => {
+  switch (category) {
+    case "Frontend":
+      return (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <polyline points="16 18 22 12 16 6"></polyline>
+          <polyline points="8 6 2 12 8 18"></polyline>
+        </svg>
+      );
+    case "Backend":
+      return (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+          <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+          <line x1="6" y1="6" x2="6.01" y2="6"></line>
+          <line x1="6" y1="18" x2="6.01" y2="18"></line>
+        </svg>
+      );
+    case "Database":
+      return (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+          <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+          <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+        </svg>
+      );
+    default:
+      return (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+        </svg>
+      );
+  }
+};
 
+export function Skills() {
+  const { skills: dbSkills } = useSkills();
   const skills = dbSkills.length > 0 ? dbSkills : fallbackSkills;
 
   // Group skills by category
@@ -53,105 +67,58 @@ export function Skills() {
     return acc;
   }, {} as Record<string, Skill[]>);
 
-  const handleAdd = () => {
-    setSelectedSkill(undefined);
-    setDialogOpen(true);
-  };
-
-  const handleEdit = (skill: Skill) => {
-    setSelectedSkill(skill);
-    setDialogOpen(true);
-  };
-
-  const handleDeleteClick = (skill: Skill) => {
-    setSkillToDelete(skill);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (skillToDelete) {
-      await deleteSkill(skillToDelete.id);
-      setDeleteDialogOpen(false);
-      setSkillToDelete(undefined);
-    }
-  };
-
-  const handleSave = async (skillData: Omit<Skill, "id">) => {
-    if (selectedSkill) {
-      return updateSkill(selectedSkill.id, skillData);
-    }
-    return addSkill(skillData);
-  };
-
   return (
-    <section id="skills" className="py-20 relative">
+    <section id="skills" className="section relative">
       {/* Background decoration */}
-      <div className="absolute top-1/2 left-0 w-72 h-72 bg-primary/10 rounded-full blur-3xl -translate-y-1/2" />
-      <div className="absolute top-1/2 right-0 w-72 h-72 bg-accent/10 rounded-full blur-3xl -translate-y-1/2" />
+      <div 
+        className="bg-blob bg-blob-primary" 
+        style={{ top: "50%", left: 0, width: "18rem", height: "18rem", transform: "translateY(-50%)" }}
+      />
+      <div 
+        className="bg-blob bg-blob-accent" 
+        style={{ top: "50%", right: 0, width: "18rem", height: "18rem", transform: "translateY(-50%)" }}
+      />
 
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+      <div className="container relative z-10">
+        <div className="text-center" style={{ marginBottom: "4rem" }}>
+          <h2 className="section-title">
             My <span className="gradient-text">Skills</span>
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="section-subtitle">
             Technologies and tools I use to bring ideas to life
           </p>
-          {isAdmin && (
-            <Button onClick={handleAdd} className="mt-4" size="sm">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Skill
-            </Button>
-          )}
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="skills-grid">
           {Object.entries(skillsByCategory).map(([category, categorySkills], index) => {
-            const Icon = categoryIcons[category] || Wrench;
-            const color = categoryColors[category] || "primary";
+            const config = categoryConfig[category] || { color: "primary" };
             
             return (
               <div
                 key={category}
-                className="glass p-6 rounded-xl hover-glow transition-all duration-300"
+                className="skill-category glass hover-glow animate-fade-in"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="flex items-center gap-3 mb-6">
-                  <div className={`p-3 rounded-lg ${color === "primary" ? "bg-primary/20" : "bg-accent/20"}`}>
-                    <Icon className={`h-6 w-6 ${color === "primary" ? "text-primary" : "text-accent"}`} />
+                <div className="skill-category-header">
+                  <div className={`skill-category-icon ${config.color}`}>
+                    <CategoryIcon category={category} />
                   </div>
-                  <h3 className="text-xl font-semibold">{category}</h3>
+                  <h3 className="skill-category-title">{category}</h3>
                 </div>
 
-                <div className="space-y-4">
+                <div className="skill-list">
                   {categorySkills.map((skill) => (
-                    <div key={skill.id} className="group relative">
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium">{skill.name}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-muted-foreground">{skill.proficiency}%</span>
-                          {isAdmin && (
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                              <button
-                                onClick={() => handleEdit(skill)}
-                                className="text-muted-foreground hover:text-foreground"
-                              >
-                                <Edit className="h-3 w-3" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteClick(skill)}
-                                className="text-muted-foreground hover:text-destructive"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </button>
-                            </div>
-                          )}
-                        </div>
+                    <div key={skill.id} className="skill-item">
+                      <div className="skill-info">
+                        <span className="skill-name">{skill.name}</span>
+                        <span className="skill-percent">{skill.proficiency}%</span>
                       </div>
-                      <Progress 
-                        value={skill.proficiency} 
-                        className="h-2 bg-secondary"
-                      />
+                      <div className="progress-container">
+                        <div 
+                          className="progress-bar" 
+                          style={{ width: `${skill.proficiency}%` }}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -160,35 +127,18 @@ export function Skills() {
           })}
         </div>
 
-        {/* Tech Stack Icons */}
-        <div className="mt-16">
-          <p className="text-center text-muted-foreground mb-8">Technologies I work with</p>
-          <div className="flex flex-wrap justify-center gap-4">
+        {/* Tech Stack Tags */}
+        <div style={{ marginTop: "4rem" }}>
+          <p className="text-center text-muted" style={{ marginBottom: "2rem" }}>Technologies I work with</p>
+          <div className="tech-tags">
             {skills.slice(0, 10).map((skill) => (
-              <div
-                key={skill.id}
-                className="px-4 py-2 rounded-full glass text-sm font-medium hover:scale-105 transition-transform cursor-default"
-              >
+              <div key={skill.id} className="tech-tag glass hover-scale">
                 {skill.name}
               </div>
             ))}
           </div>
         </div>
       </div>
-
-      <SkillDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        skill={selectedSkill}
-        onSave={handleSave}
-      />
-
-      <DeleteConfirmDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        onConfirm={handleDeleteConfirm}
-        title="Skill"
-      />
     </section>
   );
 }

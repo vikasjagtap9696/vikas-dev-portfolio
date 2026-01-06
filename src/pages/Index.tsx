@@ -8,12 +8,11 @@ import { Certificates } from "@/components/portfolio/Certificates";
 import { Resume } from "@/components/portfolio/Resume";
 import { Contact } from "@/components/portfolio/Contact";
 import { Footer } from "@/components/portfolio/Footer";
-import { AdminToolbar } from "@/components/admin/AdminToolbar";
 import { AIChatbot } from "@/components/portfolio/AIChatbot";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div style={{ minHeight: "100vh", background: "var(--color-background)" }}>
       <Navbar />
       <Hero />
       <About />
@@ -24,7 +23,6 @@ const Index = () => {
       <Resume />
       <Contact />
       <Footer />
-      <AdminToolbar />
       <AIChatbot />
     </div>
   );
