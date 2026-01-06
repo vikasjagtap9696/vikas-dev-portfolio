@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Award, ExternalLink, Calendar, Plus, Edit, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useNodeAuth } from "@/contexts/NodeAuthContext";
-import { useNodeCertificates as useCertificates, Certificate } from "@/hooks/useNodeBackend";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCertificates, Certificate } from "@/hooks/useCertificates";
 import { CertificateDialog } from "@/components/admin/CertificateDialog";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 import { format } from "date-fns";
@@ -40,7 +40,7 @@ const fallbackCertificates = [
 ];
 
 export function Certificates() {
-  const { isAdmin } = useNodeAuth();
+  const { isAdmin } = useAuth();
   const { certificates: dbCertificates, loading, addCertificate, updateCertificate, deleteCertificate } = useCertificates();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);

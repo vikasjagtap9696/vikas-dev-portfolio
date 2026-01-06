@@ -1,5 +1,5 @@
 import { Heart, ArrowUp, Github, Linkedin, Twitter, Globe } from "lucide-react";
-import { useNodeProfileSettings as useProfileSettings } from "@/hooks/useNodeBackend";
+import { useProfileSettings } from "@/hooks/useProfileSettings";
 
 export function Footer() {
   const { data: profileSettings } = useProfileSettings();

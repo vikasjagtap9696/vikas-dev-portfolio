@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Code2, Server, Database, Wrench, Plus, Edit, Trash2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { useNodeAuth } from "@/contexts/NodeAuthContext";
-import { useNodeSkills as useSkills, Skill } from "@/hooks/useNodeBackend";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSkills, Skill } from "@/hooks/useSkills";
 import { SkillDialog } from "@/components/admin/SkillDialog";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 
@@ -35,7 +35,7 @@ const fallbackSkills = [
 ];
 
 export function Skills() {
-  const { isAdmin } = useNodeAuth();
+  const { isAdmin } = useAuth();
   const { skills: dbSkills, loading, addSkill, updateSkill, deleteSkill } = useSkills();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);

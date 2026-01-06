@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import api from "@/lib/api";
+import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 
 const contactInfo = [
@@ -72,7 +72,11 @@ export function Contact() {
     setIsSubmitting(true);
 
     try {
-      await api.submitContact(formData);
+      const { error } = await supabase
+        .from("contact_submissions")
+        .insert(formData);
+
+      if (error) throw error;
 
       toast({
         title: "Message sent!",

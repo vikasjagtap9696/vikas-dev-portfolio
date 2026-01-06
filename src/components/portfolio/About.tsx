@@ -1,5 +1,5 @@
 import { Code, GraduationCap, Target, Briefcase, Shield } from "lucide-react";
-import { useNodeProfileSettings as useProfileSettings } from "@/hooks/useNodeBackend";
+import { useProfileSettings } from "@/hooks/useProfileSettings";
 
 export function About() {
   const { data: profileSettings } = useProfileSettings();
