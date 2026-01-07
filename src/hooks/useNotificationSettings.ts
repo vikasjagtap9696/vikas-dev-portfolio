@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export interface NotificationSettings {
   id: string;
@@ -10,7 +10,6 @@ export interface NotificationSettings {
 }
 
 export function useNotificationSettings() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: settings, isLoading } = useQuery({
@@ -52,17 +51,10 @@ export function useNotificationSettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notification-settings"] });
-      toast({
-        title: "Settings saved",
-        description: "Notification email updated successfully",
-      });
+      toast.success("Settings saved successfully");
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message);
     },
   });
 
