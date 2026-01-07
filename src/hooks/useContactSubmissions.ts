@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export interface ContactSubmission {
   id: string;
@@ -13,7 +13,6 @@ export interface ContactSubmission {
 }
 
 export function useContactSubmissions() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: submissions = [], isLoading } = useQuery({
@@ -42,11 +41,7 @@ export function useContactSubmissions() {
       queryClient.invalidateQueries({ queryKey: ["contact-submissions"] });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message);
     },
   });
 
@@ -61,17 +56,10 @@ export function useContactSubmissions() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["contact-submissions"] });
-      toast({
-        title: "Deleted",
-        description: "Submission deleted successfully",
-      });
+      toast.success("Submission deleted successfully");
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message);
     },
   });
 

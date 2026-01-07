@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export interface Experience {
   id: string;
@@ -18,7 +18,6 @@ export interface Experience {
 export function useExperiences() {
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
   const fetchExperiences = async () => {
     try {
@@ -50,10 +49,10 @@ export function useExperiences() {
 
       if (error) throw error;
       setExperiences([...experiences, data]);
-      toast({ title: "Experience added successfully!" });
+      toast.success("Experience added successfully!");
       return data;
     } catch (error: any) {
-      toast({ title: "Error adding experience", description: error.message, variant: "destructive" });
+      toast.error(error.message || "Error adding experience");
       throw error;
     }
   };
@@ -69,10 +68,10 @@ export function useExperiences() {
 
       if (error) throw error;
       setExperiences(experiences.map(e => e.id === id ? data : e));
-      toast({ title: "Experience updated successfully!" });
+      toast.success("Experience updated successfully!");
       return data;
     } catch (error: any) {
-      toast({ title: "Error updating experience", description: error.message, variant: "destructive" });
+      toast.error(error.message || "Error updating experience");
       throw error;
     }
   };
@@ -86,9 +85,9 @@ export function useExperiences() {
 
       if (error) throw error;
       setExperiences(experiences.filter(e => e.id !== id));
-      toast({ title: "Experience deleted successfully!" });
+      toast.success("Experience deleted successfully!");
     } catch (error: any) {
-      toast({ title: "Error deleting experience", description: error.message, variant: "destructive" });
+      toast.error(error.message || "Error deleting experience");
       throw error;
     }
   };

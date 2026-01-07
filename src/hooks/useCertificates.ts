@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export interface Certificate {
   id: string;
@@ -15,7 +15,6 @@ export interface Certificate {
 export function useCertificates() {
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
   const fetchCertificates = async () => {
     try {
@@ -47,10 +46,10 @@ export function useCertificates() {
 
       if (error) throw error;
       setCertificates([...certificates, data]);
-      toast({ title: "Certificate added successfully!" });
+      toast.success("Certificate added successfully!");
       return data;
     } catch (error: any) {
-      toast({ title: "Error adding certificate", description: error.message, variant: "destructive" });
+      toast.error(error.message || "Error adding certificate");
       throw error;
     }
   };
@@ -66,10 +65,10 @@ export function useCertificates() {
 
       if (error) throw error;
       setCertificates(certificates.map(c => c.id === id ? data : c));
-      toast({ title: "Certificate updated successfully!" });
+      toast.success("Certificate updated successfully!");
       return data;
     } catch (error: any) {
-      toast({ title: "Error updating certificate", description: error.message, variant: "destructive" });
+      toast.error(error.message || "Error updating certificate");
       throw error;
     }
   };
@@ -83,9 +82,9 @@ export function useCertificates() {
 
       if (error) throw error;
       setCertificates(certificates.filter(c => c.id !== id));
-      toast({ title: "Certificate deleted successfully!" });
+      toast.success("Certificate deleted successfully!");
     } catch (error: any) {
-      toast({ title: "Error deleting certificate", description: error.message, variant: "destructive" });
+      toast.error(error.message || "Error deleting certificate");
       throw error;
     }
   };

@@ -1,9 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export function useResume() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: resumeSettings, isLoading } = useQuery({
@@ -53,17 +52,10 @@ export function useResume() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resume-settings"] });
-      toast({
-        title: "Resume uploaded",
-        description: "Your resume has been uploaded successfully.",
-      });
+      toast.success("Resume uploaded successfully");
     },
     onError: (error) => {
-      toast({
-        title: "Upload failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message || "Upload failed");
     },
   });
 

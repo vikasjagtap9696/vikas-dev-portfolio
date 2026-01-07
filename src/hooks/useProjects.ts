@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export interface Project {
   id: string;
@@ -17,7 +17,6 @@ export interface Project {
 export function useProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
   const fetchProjects = async () => {
     try {
@@ -49,10 +48,10 @@ export function useProjects() {
 
       if (error) throw error;
       setProjects([...projects, data]);
-      toast({ title: "Project added successfully!" });
+      toast.success("Project added successfully!");
       return data;
     } catch (error: any) {
-      toast({ title: "Error adding project", description: error.message, variant: "destructive" });
+      toast.error(error.message || "Error adding project");
       throw error;
     }
   };
@@ -68,10 +67,10 @@ export function useProjects() {
 
       if (error) throw error;
       setProjects(projects.map(p => p.id === id ? data : p));
-      toast({ title: "Project updated successfully!" });
+      toast.success("Project updated successfully!");
       return data;
     } catch (error: any) {
-      toast({ title: "Error updating project", description: error.message, variant: "destructive" });
+      toast.error(error.message || "Error updating project");
       throw error;
     }
   };
@@ -85,9 +84,9 @@ export function useProjects() {
 
       if (error) throw error;
       setProjects(projects.filter(p => p.id !== id));
-      toast({ title: "Project deleted successfully!" });
+      toast.success("Project deleted successfully!");
     } catch (error: any) {
-      toast({ title: "Error deleting project", description: error.message, variant: "destructive" });
+      toast.error(error.message || "Error deleting project");
       throw error;
     }
   };

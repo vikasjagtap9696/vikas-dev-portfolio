@@ -1,210 +1,252 @@
+import { useState, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
 import { 
-  LogOut, 
   Shield, 
-  UserPlus, 
-  FileText, 
-  Image, 
-  Settings,
+  LogOut, 
   ChevronDown,
+  ChevronRight,
   Mail,
-  Upload
+  FileText,
+  Image,
+  Settings,
+  User,
+  Briefcase,
+  Award,
+  Code,
+  FolderOpen,
+  Edit,
+  Upload,
+  Link
 } from "lucide-react";
-import { useState } from "react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
-  DropdownMenuPortal,
-} from "@/components/ui/dropdown-menu";
-import { InviteAdminDialog } from "./InviteAdminDialog";
-import { ContactSubmissionsDialog } from "./ContactSubmissionsDialog";
-import { NotificationSettingsDialog } from "./NotificationSettingsDialog";
-import { ProfilePhotoDialog } from "./ProfilePhotoDialog";
-import { HeroBackgroundDialog } from "./HeroBackgroundDialog";
-import { SocialLinksDialog } from "./SocialLinksDialog";
-import { AboutImageDialog } from "./AboutImageDialog";
+
+// Admin dialogs
 import { HeroTextDialog } from "./HeroTextDialog";
+import { HeroStatsDialog } from "./HeroStatsDialog";
 import { AboutTextDialog } from "./AboutTextDialog";
 import { CareerGoalsDialog } from "./CareerGoalsDialog";
-import { HeroStatsDialog } from "./HeroStatsDialog";
+import { SocialLinksDialog } from "./SocialLinksDialog";
 import { FooterDialog } from "./FooterDialog";
-import { ExperienceManageDialog } from "./ExperienceManageDialog";
+import { ProfilePhotoDialog } from "./ProfilePhotoDialog";
+import { HeroBackgroundDialog } from "./HeroBackgroundDialog";
+import { AboutImageDialog } from "./AboutImageDialog";
+import { ResumeUploadDialog } from "./ResumeUploadDialog";
+import { NotificationSettingsDialog } from "./NotificationSettingsDialog";
+import { ContactSubmissionsDialog } from "./ContactSubmissionsDialog";
 import { SkillsManageDialog } from "./SkillsManageDialog";
 import { ProjectsManageDialog } from "./ProjectsManageDialog";
+import { ExperienceManageDialog } from "./ExperienceManageDialog";
 import { CertificatesManageDialog } from "./CertificatesManageDialog";
-import { ResumeUploadDialog } from "./ResumeUploadDialog";
+import { InviteAdminDialog } from "./InviteAdminDialog";
+import { useContactSubmissions } from "@/hooks/useContactSubmissions";
 
 export function AdminToolbar() {
   const { isAdmin, signOut } = useAuth();
-  const [showInvite, setShowInvite] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
+  const [activeDialog, setActiveDialog] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const { unreadCount } = useContactSubmissions();
 
   if (!isAdmin) return null;
 
+  const handleMenuToggle = () => {
+    setMenuOpen(!menuOpen);
+    setActiveSubmenu(null);
+  };
+
+  const handleSubmenuToggle = (submenu: string) => {
+    setActiveSubmenu(activeSubmenu === submenu ? null : submenu);
+  };
+
+  const openDialog = (dialog: string) => {
+    setActiveDialog(dialog);
+    setMenuOpen(false);
+    setActiveSubmenu(null);
+  };
+
+  const closeDialog = () => {
+    setActiveDialog(null);
+  };
+
   return (
     <>
-      <div className="fixed bottom-20 right-2 z-50">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button className="gap-2 shadow-lg rounded-full px-6" size="lg">
-              <Shield className="h-4 w-4" />
-              Admin Mode
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" side="top" className="w-56 bg-background border shadow-xl z-[60]">
+      <div className="admin-toolbar" ref={menuRef}>
+        {menuOpen && (
+          <div className="admin-menu">
             {/* Contact Submissions */}
-            <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-              <div className="w-full">
-                <ContactSubmissionsDialog />
-              </div>
-            </DropdownMenuItem>
-            
-            <DropdownMenuSeparator />
-            
-            {/* Content Sub-menu */}
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <FileText className="h-4 w-4 mr-2" />
-                Content
-              </DropdownMenuSubTrigger>
-              <DropdownMenuPortal>
-                <DropdownMenuSubContent className="w-48 bg-background border shadow-xl z-[60]">
-                  <DropdownMenuLabel>Hero Section</DropdownMenuLabel>
-                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                    <div className="w-full">
-                      <HeroTextDialog />
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                    <div className="w-full">
-                      <HeroStatsDialog />
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>About Section</DropdownMenuLabel>
-                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                    <div className="w-full">
-                      <AboutTextDialog />
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                    <div className="w-full">
-                      <CareerGoalsDialog />
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Manage Sections</DropdownMenuLabel>
-                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                    <div className="w-full">
-                      <SkillsManageDialog />
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                    <div className="w-full">
-                      <ProjectsManageDialog />
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                    <div className="w-full">
-                      <ExperienceManageDialog />
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                    <div className="w-full">
-                      <CertificatesManageDialog />
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Footer</DropdownMenuLabel>
-                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                    <div className="w-full">
-                      <FooterDialog />
-                    </div>
-                  </DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuPortal>
-            </DropdownMenuSub>
+            <button 
+              className="admin-menu-item"
+              onClick={() => openDialog("contact")}
+              style={{ position: "relative" }}
+            >
+              <Mail size={16} />
+              <span>Contact Submissions</span>
+              {unreadCount > 0 && (
+                <span className="badge badge-destructive" style={{ marginLeft: "auto" }}>
+                  {unreadCount}
+                </span>
+              )}
+            </button>
 
-            {/* Media Sub-menu */}
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <Image className="h-4 w-4 mr-2" />
-                Media
-              </DropdownMenuSubTrigger>
-              <DropdownMenuPortal>
-                <DropdownMenuSubContent className="w-48 bg-background border shadow-xl z-[60]">
-                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                    <div className="w-full">
-                      <ProfilePhotoDialog />
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                    <div className="w-full">
-                      <HeroBackgroundDialog />
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                    <div className="w-full">
-                      <AboutImageDialog />
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                    <div className="w-full flex items-center gap-2 px-2 py-1.5 text-sm">
-                      <Upload className="h-4 w-4" />
-                      <ResumeUploadDialog />
-                    </div>
-                  </DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuPortal>
-            </DropdownMenuSub>
+            <div className="admin-menu-separator" />
 
-            {/* Settings Sub-menu */}
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </DropdownMenuSubTrigger>
-              <DropdownMenuPortal>
-                <DropdownMenuSubContent className="w-48 bg-background border shadow-xl z-[60]">
-                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                    <div className="w-full">
-                      <SocialLinksDialog />
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-                    <div className="w-full">
-                      <NotificationSettingsDialog />
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => setShowInvite(true)}>
-                    <UserPlus className="h-4 w-4 mr-2" />
+            {/* Content Submenu */}
+            <div className="admin-submenu">
+              <button 
+                className="admin-menu-item"
+                onClick={() => handleSubmenuToggle("content")}
+              >
+                <FileText size={16} />
+                <span style={{ flex: 1 }}>Content</span>
+                <ChevronRight size={14} />
+              </button>
+              {activeSubmenu === "content" && (
+                <div className="admin-submenu-content">
+                  <div className="admin-menu-label">Hero Section</div>
+                  <button className="admin-menu-item" onClick={() => openDialog("heroText")}>
+                    <Edit size={14} />
+                    Hero Text
+                  </button>
+                  <button className="admin-menu-item" onClick={() => openDialog("heroStats")}>
+                    <Edit size={14} />
+                    Hero Stats
+                  </button>
+                  
+                  <div className="admin-menu-separator" />
+                  <div className="admin-menu-label">About Section</div>
+                  <button className="admin-menu-item" onClick={() => openDialog("aboutText")}>
+                    <Edit size={14} />
+                    About Text
+                  </button>
+                  <button className="admin-menu-item" onClick={() => openDialog("careerGoals")}>
+                    <Edit size={14} />
+                    Career Goals
+                  </button>
+                  
+                  <div className="admin-menu-separator" />
+                  <div className="admin-menu-label">Manage Sections</div>
+                  <button className="admin-menu-item" onClick={() => openDialog("skills")}>
+                    <Code size={14} />
+                    Skills
+                  </button>
+                  <button className="admin-menu-item" onClick={() => openDialog("projects")}>
+                    <FolderOpen size={14} />
+                    Projects
+                  </button>
+                  <button className="admin-menu-item" onClick={() => openDialog("experience")}>
+                    <Briefcase size={14} />
+                    Experience
+                  </button>
+                  <button className="admin-menu-item" onClick={() => openDialog("certificates")}>
+                    <Award size={14} />
+                    Certificates
+                  </button>
+
+                  <div className="admin-menu-separator" />
+                  <button className="admin-menu-item" onClick={() => openDialog("footer")}>
+                    <Edit size={14} />
+                    Footer
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Media Submenu */}
+            <div className="admin-submenu">
+              <button 
+                className="admin-menu-item"
+                onClick={() => handleSubmenuToggle("media")}
+              >
+                <Image size={16} />
+                <span style={{ flex: 1 }}>Media</span>
+                <ChevronRight size={14} />
+              </button>
+              {activeSubmenu === "media" && (
+                <div className="admin-submenu-content">
+                  <button className="admin-menu-item" onClick={() => openDialog("profilePhoto")}>
+                    <User size={14} />
+                    Profile Photo
+                  </button>
+                  <button className="admin-menu-item" onClick={() => openDialog("heroBackground")}>
+                    <Image size={14} />
+                    Hero Background
+                  </button>
+                  <button className="admin-menu-item" onClick={() => openDialog("aboutImage")}>
+                    <Image size={14} />
+                    About Image
+                  </button>
+                  <div className="admin-menu-separator" />
+                  <button className="admin-menu-item" onClick={() => openDialog("resume")}>
+                    <Upload size={14} />
+                    Upload Resume
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Settings Submenu */}
+            <div className="admin-submenu">
+              <button 
+                className="admin-menu-item"
+                onClick={() => handleSubmenuToggle("settings")}
+              >
+                <Settings size={16} />
+                <span style={{ flex: 1 }}>Settings</span>
+                <ChevronRight size={14} />
+              </button>
+              {activeSubmenu === "settings" && (
+                <div className="admin-submenu-content">
+                  <button className="admin-menu-item" onClick={() => openDialog("socialLinks")}>
+                    <Link size={14} />
+                    Social Links
+                  </button>
+                  <button className="admin-menu-item" onClick={() => openDialog("notifications")}>
+                    <Mail size={14} />
+                    Notifications
+                  </button>
+                  <div className="admin-menu-separator" />
+                  <button className="admin-menu-item" onClick={() => openDialog("inviteAdmin")}>
+                    <User size={14} />
                     Invite Admin
-                  </DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuPortal>
-            </DropdownMenuSub>
+                  </button>
+                </div>
+              )}
+            </div>
 
-            <DropdownMenuSeparator />
-            
-            <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
-              <LogOut className="h-4 w-4 mr-2" />
+            <div className="admin-menu-separator" />
+
+            <button className="admin-menu-item danger" onClick={signOut}>
+              <LogOut size={16} />
               Log Out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </button>
+          </div>
+        )}
+
+        <button className="admin-btn" onClick={handleMenuToggle}>
+          <Shield size={18} />
+          <span>Admin</span>
+          <ChevronDown size={16} style={{ transform: menuOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+        </button>
       </div>
 
-      <InviteAdminDialog open={showInvite} onOpenChange={setShowInvite} />
+      {/* Dialogs */}
+      <HeroTextDialog open={activeDialog === "heroText"} onClose={closeDialog} />
+      <HeroStatsDialog open={activeDialog === "heroStats"} onClose={closeDialog} />
+      <AboutTextDialog open={activeDialog === "aboutText"} onClose={closeDialog} />
+      <CareerGoalsDialog open={activeDialog === "careerGoals"} onClose={closeDialog} />
+      <SocialLinksDialog open={activeDialog === "socialLinks"} onClose={closeDialog} />
+      <FooterDialog open={activeDialog === "footer"} onClose={closeDialog} />
+      <ProfilePhotoDialog open={activeDialog === "profilePhoto"} onClose={closeDialog} />
+      <HeroBackgroundDialog open={activeDialog === "heroBackground"} onClose={closeDialog} />
+      <AboutImageDialog open={activeDialog === "aboutImage"} onClose={closeDialog} />
+      <ResumeUploadDialog open={activeDialog === "resume"} onClose={closeDialog} />
+      <NotificationSettingsDialog open={activeDialog === "notifications"} onClose={closeDialog} />
+      <ContactSubmissionsDialog open={activeDialog === "contact"} onClose={closeDialog} />
+      <SkillsManageDialog open={activeDialog === "skills"} onClose={closeDialog} />
+      <ProjectsManageDialog open={activeDialog === "projects"} onClose={closeDialog} />
+      <ExperienceManageDialog open={activeDialog === "experience"} onClose={closeDialog} />
+      <CertificatesManageDialog open={activeDialog === "certificates"} onClose={closeDialog} />
+      <InviteAdminDialog open={activeDialog === "inviteAdmin"} onClose={closeDialog} />
     </>
   );
 }

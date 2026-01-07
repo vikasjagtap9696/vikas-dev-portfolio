@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export interface Skill {
   id: string;
@@ -14,7 +14,6 @@ export interface Skill {
 export function useSkills() {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
   const fetchSkills = async () => {
     try {
@@ -46,10 +45,10 @@ export function useSkills() {
 
       if (error) throw error;
       setSkills([...skills, data]);
-      toast({ title: "Skill added successfully!" });
+      toast.success("Skill added successfully!");
       return data;
     } catch (error: any) {
-      toast({ title: "Error adding skill", description: error.message, variant: "destructive" });
+      toast.error(error.message || "Error adding skill");
       throw error;
     }
   };
@@ -65,10 +64,10 @@ export function useSkills() {
 
       if (error) throw error;
       setSkills(skills.map(s => s.id === id ? data : s));
-      toast({ title: "Skill updated successfully!" });
+      toast.success("Skill updated successfully!");
       return data;
     } catch (error: any) {
-      toast({ title: "Error updating skill", description: error.message, variant: "destructive" });
+      toast.error(error.message || "Error updating skill");
       throw error;
     }
   };
@@ -82,9 +81,9 @@ export function useSkills() {
 
       if (error) throw error;
       setSkills(skills.filter(s => s.id !== id));
-      toast({ title: "Skill deleted successfully!" });
+      toast.success("Skill deleted successfully!");
     } catch (error: any) {
-      toast({ title: "Error deleting skill", description: error.message, variant: "destructive" });
+      toast.error(error.message || "Error deleting skill");
       throw error;
     }
   };
