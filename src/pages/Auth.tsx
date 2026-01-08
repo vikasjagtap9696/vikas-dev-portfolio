@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from "lucide-react";
+import "@/styles/main.css";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -17,7 +15,6 @@ export default function Auth() {
   
   const { user, signIn, signUp, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   useEffect(() => {
     if (user) {
@@ -33,49 +30,27 @@ export default function Auth() {
       if (isLogin) {
         const { error } = await signIn(email, password);
         if (error) {
-          toast({
-            title: "Login failed",
-            description: error.message,
-            variant: "destructive"
-          });
+          toast.error(error.message || "Login failed");
         } else {
-          toast({
-            title: "Welcome back!",
-            description: "You have successfully logged in."
-          });
+          toast.success("Welcome back!");
           navigate("/");
         }
       } else {
         if (!fullName.trim()) {
-          toast({
-            title: "Name required",
-            description: "Please enter your full name.",
-            variant: "destructive"
-          });
+          toast.error("Please enter your full name");
           setIsLoading(false);
           return;
         }
         const { error } = await signUp(email, password, fullName);
         if (error) {
-          toast({
-            title: "Sign up failed",
-            description: error.message,
-            variant: "destructive"
-          });
+          toast.error(error.message || "Sign up failed");
         } else {
-          toast({
-            title: "Account created!",
-            description: "Welcome to the portfolio. You can now log in."
-          });
+          toast.success("Account created! You can now log in.");
           navigate("/");
         }
       }
     } catch (err) {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred.",
-        variant: "destructive"
-      });
+      toast.error("An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -85,122 +60,108 @@ export default function Auth() {
     setIsLoading(true);
     const { error } = await signInWithGoogle();
     if (error) {
-      toast({
-        title: "Google sign in failed",
-        description: error.message,
-        variant: "destructive"
-      });
+      toast.error(error.message || "Google sign in failed");
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/")}
-          className="mb-6"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Portfolio
-        </Button>
+    <div className="auth-page">
+      <div className="auth-container">
+        <button className="btn btn-ghost auth-back" onClick={() => navigate("/")}>
+          <ArrowLeft size={18} />
+          <span>Back to Portfolio</span>
+        </button>
 
-        <div className="glass p-8 rounded-2xl">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold gradient-text mb-2">
+        <div className="auth-card">
+          <div className="auth-header">
+            <h1 className="auth-title">
               {isLogin ? "Welcome Back" : "Create Account"}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="auth-subtitle">
               {isLogin
                 ? "Sign in to access admin features"
                 : "Sign up to get started"}
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="auth-form">
             {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
+              <div className="form-group">
+                <label className="form-label" htmlFor="fullName">Full Name</label>
+                <div className="input-with-icon">
+                  <User size={18} className="input-icon" />
+                  <input
                     id="fullName"
                     type="text"
+                    className="form-input"
                     placeholder="Vikas Jagtap"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="pl-10"
                   />
                 </div>
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
+            <div className="form-group">
+              <label className="form-label" htmlFor="email">Email</label>
+              <div className="input-with-icon">
+                <Mail size={18} className="input-icon" />
+                <input
                   id="email"
                   type="email"
+                  className="form-input"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
                   required
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
+            <div className="form-group">
+              <label className="form-label" htmlFor="password">Password</label>
+              <div className="input-with-icon">
+                <Lock size={18} className="input-icon" />
+                <input
                   id="password"
                   type={showPassword ? "text" : "password"}
+                  className="form-input"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10"
                   required
                   minLength={6}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="password-toggle"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
-            <Button
+            <button
               type="submit"
-              className="w-full bg-primary hover:bg-primary/90"
+              className="btn btn-primary btn-full"
               disabled={isLoading}
             >
               {isLoading ? "Loading..." : isLogin ? "Sign In" : "Create Account"}
-            </Button>
+            </button>
           </form>
 
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-            </div>
+          <div className="auth-divider">
+            <span>Or continue with</span>
           </div>
 
-          <Button
-            variant="outline"
-            className="w-full"
+          <button
+            className="btn btn-secondary btn-full google-btn"
             onClick={handleGoogleSignIn}
             disabled={isLoading}
           >
-            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+            <svg width="18" height="18" viewBox="0 0 24 24">
               <path
                 fill="currentColor"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -219,14 +180,14 @@ export default function Auth() {
               />
             </svg>
             Google
-          </Button>
+          </button>
 
-          <p className="text-center mt-6 text-sm text-muted-foreground">
+          <p className="auth-toggle">
             {isLogin ? "Don't have an account? " : "Already have an account? "}
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
-              className="text-primary hover:underline font-medium"
+              className="auth-toggle-link"
             >
               {isLogin ? "Sign up" : "Sign in"}
             </button>
