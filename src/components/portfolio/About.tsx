@@ -1,7 +1,14 @@
+import { useState } from "react";
 import { useProfileSettings } from "@/hooks/useProfileSettings";
+import { useAuth } from "@/contexts/AuthContext";
+import { AboutTextDialog } from "@/components/admin/AboutTextDialog";
+import { CareerGoalsDialog } from "@/components/admin/CareerGoalsDialog";
+import { AboutImageDialog } from "@/components/admin/AboutImageDialog";
 
 export function About() {
   const { data: profileSettings } = useProfileSettings();
+  const { user } = useAuth();
+  const [openDialog, setOpenDialog] = useState<string | null>(null);
 
   const careerGoals = profileSettings?.career_goals || [
     "Become an industry-ready all-round developer",
@@ -19,7 +26,34 @@ export function About() {
   const secondaryEdu = parseEducation(profileSettings?.about_education_secondary || "Full Stack Development | Self-taught & Continuous Learning");
 
   return (
-    <section id="about" className="section">
+    <section id="about" className="section" style={{ position: "relative" }}>
+      {/* Admin Edit Button */}
+      {user && (
+        <div style={{ position: "absolute", top: "1rem", right: "1rem", zIndex: 50, display: "flex", gap: "0.5rem" }}>
+          <button className="section-edit-btn" onClick={() => setOpenDialog("aboutText")}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Edit About
+          </button>
+          <button className="section-edit-btn" onClick={() => setOpenDialog("careerGoals")}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Goals
+          </button>
+          <button className="section-edit-btn" onClick={() => setOpenDialog("aboutImage")}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Image
+          </button>
+        </div>
+      )}
+
       <div className="container">
         <div className="text-center" style={{ marginBottom: "4rem" }}>
           <h2 className="section-title">
@@ -154,6 +188,11 @@ export function About() {
           </div>
         </div>
       </div>
+
+      {/* Dialogs */}
+      <AboutTextDialog open={openDialog === "aboutText"} onClose={() => setOpenDialog(null)} />
+      <CareerGoalsDialog open={openDialog === "careerGoals"} onClose={() => setOpenDialog(null)} />
+      <AboutImageDialog open={openDialog === "aboutImage"} onClose={() => setOpenDialog(null)} />
     </section>
   );
 }
