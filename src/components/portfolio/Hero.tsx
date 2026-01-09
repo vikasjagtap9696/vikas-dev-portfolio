@@ -1,7 +1,15 @@
+import { useState } from "react";
 import { useProfileSettings } from "@/hooks/useProfileSettings";
+import { useAuth } from "@/contexts/AuthContext";
+import { HeroTextDialog } from "@/components/admin/HeroTextDialog";
+import { HeroStatsDialog } from "@/components/admin/HeroStatsDialog";
+import { ProfilePhotoDialog } from "@/components/admin/ProfilePhotoDialog";
+import { SocialLinksDialog } from "@/components/admin/SocialLinksDialog";
 
 export function Hero() {
   const { data: profileSettings } = useProfileSettings();
+  const { user } = useAuth();
+  const [openDialog, setOpenDialog] = useState<string | null>(null);
 
   const handleScroll = (href: string) => {
     const element = document.querySelector(href);
@@ -15,6 +23,40 @@ export function Hero() {
 
   return (
     <section id="home" className="hero">
+      {/* Admin Edit Buttons */}
+      {user && (
+        <div style={{ position: "absolute", top: "5rem", right: "1rem", zIndex: 50, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          <button className="section-edit-btn" onClick={() => setOpenDialog("heroText")}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Text
+          </button>
+          <button className="section-edit-btn" onClick={() => setOpenDialog("heroStats")}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Stats
+          </button>
+          <button className="section-edit-btn" onClick={() => setOpenDialog("profilePhoto")}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Photo
+          </button>
+          <button className="section-edit-btn" onClick={() => setOpenDialog("socialLinks")}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Social
+          </button>
+        </div>
+      )}
+
       {/* Background Image */}
       {profileSettings?.hero_background_url && (
         <div 
@@ -182,6 +224,12 @@ export function Hero() {
           </button>
         </div>
       </div>
+
+      {/* Dialogs */}
+      <HeroTextDialog open={openDialog === "heroText"} onClose={() => setOpenDialog(null)} />
+      <HeroStatsDialog open={openDialog === "heroStats"} onClose={() => setOpenDialog(null)} />
+      <ProfilePhotoDialog open={openDialog === "profilePhoto"} onClose={() => setOpenDialog(null)} />
+      <SocialLinksDialog open={openDialog === "socialLinks"} onClose={() => setOpenDialog(null)} />
     </section>
   );
 }

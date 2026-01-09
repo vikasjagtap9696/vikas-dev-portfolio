@@ -2207,6 +2207,42 @@ h4 { font-size: 1.25rem; }
   visibility: visible;
 }
 
+/* Section Edit Button */
+.section-edit-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-foreground);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-base);
+  box-shadow: var(--shadow-md);
+  opacity: 0.7;
+}
+
+.section-edit-btn:hover {
+  opacity: 1;
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-glow-primary);
+  transform: translateY(-2px);
+}
+
+.section-edit-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
 .admin-menu {
   position: absolute;
   bottom: 100%;
