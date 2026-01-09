@@ -222,10 +222,9 @@ export function AdminToolbar() {
           </div>
         )}
 
-        <button className="admin-btn" onClick={handleMenuToggle}>
-          <Shield size={18} />
-          <span>Admin</span>
-          <ChevronDown size={16} style={{ transform: menuOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+        <button className="admin-btn" onClick={handleMenuToggle} title="Admin Panel">
+          <Shield size={14} />
+          <ChevronDown size={12} style={{ transform: menuOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
         </button>
       </div>
 
