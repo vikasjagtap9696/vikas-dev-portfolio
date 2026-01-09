@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
 
 const navItems = [
   { label: "Home", href: "#home" },
@@ -11,6 +13,7 @@ const navItems = [
 ];
 
 export function Navbar() {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -63,6 +66,11 @@ export function Navbar() {
           >
             Hire Me
           </button>
+          {!user && (
+            <Link to="/auth" className="navbar-link" style={{ marginLeft: "0.5rem" }}>
+              Admin
+            </Link>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -111,6 +119,16 @@ export function Navbar() {
             >
               Hire Me
             </button>
+            {!user && (
+              <Link 
+                to="/auth" 
+                className="navbar-link"
+                style={{ padding: "0.5rem 0", textAlign: "center" }}
+                onClick={() => setIsOpen(false)}
+              >
+                Admin Login
+              </Link>
+            )}
           </div>
         </div>
       )}
