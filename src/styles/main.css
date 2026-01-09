@@ -2160,6 +2160,7 @@ h4 { font-size: 1.25rem; }
 }
 
 .admin-btn {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--spacing-1);
@@ -2178,6 +2179,32 @@ h4 { font-size: 1.25rem; }
 .admin-btn:hover {
   box-shadow: var(--shadow-glow-primary);
   transform: translateY(-2px);
+}
+
+.admin-btn::before {
+  content: "Admin Panel";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: var(--color-card);
+  color: var(--color-foreground);
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+
+.admin-btn:hover::before {
+  opacity: 1;
+  visibility: visible;
 }
 
 .admin-menu {
